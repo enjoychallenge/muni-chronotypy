@@ -1,3 +1,4 @@
 /data/raw
+/data/derived
 /.idea
 deps/postgresql/data
