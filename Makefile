@@ -52,3 +52,5 @@ db-guess-export:
 stop-all-docker-containers:
 	docker stop $$(docker ps -q)
 
+convert:
+	docker-compose run --rm --no-deps trainer python /app/convert.py

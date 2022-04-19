@@ -18,3 +18,9 @@ services:
       image: osgeo/gdal:alpine-normal-3.0.3
       volumes:
         - ./data:/data
+
+   trainer:
+      image: python:3.8
+      volumes:
+        - ./data:/data
+        - .:/app
