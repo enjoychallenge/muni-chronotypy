@@ -17,22 +17,51 @@ from sklearn.svm import SVC
 from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import accuracy_score
+import numpy as np
+
+import logging
+
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s [%(filename)s] [%(levelname)s]:\t%(message)s')
+logger = logging.getLogger(__name__)
+
+logger.info(f"Let's learn something.")
 
 # Load dataset
-url = "data/derived/zsj_full.csv"
-dataset = read_csv(url)
+url = "data/derived/train_rows_important_columns.csv"
+logger.info(f"  Reading csv")
+dataset = read_csv(url, )
 
-scatter_matrix(dataset)
-pyplot.show()
+logger.info(f"  Scattering matrix")
+# scatter_matrix(dataset)
+logger.info(f"  Showing pyplot")
+# pyplot.show()
 
 # # Split-out validation dataset
 array = dataset.values
-X = array[:, 2:7]
-y = array[:, 7]
+# X = array[:, 1:69]
+X = array[:, 1:4]
+y = array[:, -1]
+X = np.array(X, dtype='float32')
+y = np.array(y, dtype='uint8')
 
+logger.info(X[:5])
+logger.info(y[:5])
+logger.info(f"  Prepare datasets")
 X_train, X_validation, Y_train, Y_validation = train_test_split(X, y, test_size=0.20, random_state=1, shuffle=True)
-# # Spot Check Algorithms
 
+logger.info(f'X: train={X_train.shape}, validation={X_validation.shape}')
+logger.info(f'Y: train={Y_train.shape}, validation={Y_validation.shape}')
+# logger.info(f'{dataset.dtypes}')
+# logger.info(dataset.head(5))
+# count_class = dataset.groupby('trenovacitypkod').size()
+# logger.info(count_class)
+# Y_train_set = set(Y_train)
+# Y_validation_set = set(Y_validation)
+# logger.info(f'Y_train_set={Y_train_set}, Y_validation_set={Y_validation_set}')
+# logger.info(f'Y_train={Y_train[:5]}\nY_validation={Y_validation[:5]}')
+
+
+# # Spot Check Algorithms
 models = []
 models.append(('LR', LogisticRegression(solver='liblinear', multi_class='ovr')))
 models.append(('LDA', LinearDiscriminantAnalysis()))
@@ -43,12 +72,13 @@ models.append(('SVM', SVC(gamma='auto')))
 # evaluate each model in turn
 results = []
 names = []
+kfold = StratifiedKFold(n_splits=7, random_state=1, shuffle=True, )
 for name, model in models:
-	kfold = StratifiedKFold(n_splits=10, random_state=1, shuffle=True)
+	logger.info(f'Starting training model {name}')
 	cv_results = cross_val_score(model, X_train, Y_train, cv=kfold, scoring='accuracy')
 	results.append(cv_results)
 	names.append(name)
-	print('%s: %f (%f)' % (name, cv_results.mean(), cv_results.std()))
+	logger.info('%s: %f (%f)' % (name, cv_results.mean(), cv_results.std()))
 
 # LR: 0.631028 (0.107070)
 # LDA: 0.627668 (0.056587)
@@ -57,18 +87,18 @@ for name, model in models:
 # NB: 0.460277 (0.109231)
 # SVM: 0.543874 (0.019460)
 
-model = LinearDiscriminantAnalysis()
+model = DecisionTreeClassifier()
 model.fit(X_train, Y_train)
 predictions = model.predict(X_validation)
 
-print(accuracy_score(Y_validation, predictions))
-print(confusion_matrix(Y_validation, predictions))
-print(classification_report(Y_validation, predictions))
+logger.info(f'accuracy_score={accuracy_score(Y_validation, predictions)}')
+logger.info(f'confusion_matrix={confusion_matrix(Y_validation, predictions)}')
+logger.info(f'classification_report={classification_report(Y_validation, predictions)}')
 
 predictions = model.predict(X)
-print(accuracy_score(y, predictions))
-print(confusion_matrix(y, predictions))
-print(classification_report(y, predictions))
+logger.info(f'accuracy_score={accuracy_score(y, predictions)}')
+logger.info(f'confusion_matrix={confusion_matrix(y, predictions)}')
+logger.info(f'classification_report={classification_report(y, predictions)}')
 
 df_chronotyp = pd.DataFrame({'chronotyp_guessed': predictions})
 df_export = pd.concat([dataset, df_chronotyp], axis=1, sort=False)
