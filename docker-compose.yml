@@ -21,6 +21,7 @@ services:
 
    trainer:
       image: continuumio/anaconda3:2021.11
+      user: ${UID_GID}
       volumes:
         - ./data:/data
         - .:/app
