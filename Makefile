@@ -1,20 +1,7 @@
 .PHONY: test
 
 download-data:
-	rclone copy gdrive-jirikozel:/business/altimapo/chronotypy/data data/raw
-	cd data/raw && { curl -O https://vdp.cuzk.cz/vymenny_format/soucasna/20191231_OB_582786_UKSH.xml.zip ; cd -; }
-	unzip data/raw/20191231_OB_582786_UKSH.xml.zip -d data/raw/
-	rm -rf data/raw/20191231_OB_582786_UKSH.xml.zip
-	cd data/raw && { curl -O https://brnourbangrid.cz/static/grid-data/brnourbangrid--usually_resident_population--2011-03-26--e15d37.zip ; cd -; }
-	cd data/raw && { curl -O https://brnourbangrid.cz/static/grid-data/brnourbangrid--occupied_jobs--2018--e64c61.zip ; cd -; }
-	cd data/raw && { curl -O https://brnourbangrid.cz/static/grid-data/brnourbangrid--landcover_urban_atlas--2012--69ef7e.zip ; cd -; }
-	cd data/raw && { curl -O https://brnourbangrid.cz/static/grid-data/brnourbangrid--builtup_area--2011--bc23b0.zip ; cd -; }
-	cd data/raw && { curl -O https://brnourbangrid.cz/static/grid-data/brnourbangrid--number_of_inhabited_flats--2011-03-26--0d42ff.zip ; cd -; }
-	cd data/raw && { curl -O https://brnourbangrid.cz/static/grid-data/brnourbangrid--retail_sales_area--2017-10--2017-12--65f9a7.zip ; cd -; }
-	mkdir -p data/derived
-	rm -rf data/derived/*
-	xlsx2csv -n prac_den data/raw/brno_2018_wd_RLI.xlsx data/derived/brno_2018_wd_RLI.csv
-	xlsx2csv -n prac_den_rel data/raw/clusters.xlsx data/derived/clusters.csv
+	rclone sync --progress gdrive-chronotopy:/06_Vystupy/01_priprava_terenovaci_casti/strojove_uceni/raw data/raw
 
 up:
 	docker-compose up -d postgresql
@@ -53,4 +40,8 @@ stop-all-docker-containers:
 	docker stop $$(docker ps -q)
 
 convert:
+	mkdir -p data/derived
 	docker-compose run --rm --no-deps trainer python /app/convert.py
+
+upload-data:
+	rclone copy --progress data/derived gdrive-chronotopy:/06_Vystupy/01_priprava_terenovaci_casti/strojove_uceni/derived

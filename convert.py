@@ -8,11 +8,12 @@ logger = logging.getLogger(__name__)
 if __name__ == "__main__":
     logger.info(f"Let's convert raw data.")
     # Put needed files from https://drive.google.com/drive/folders/1ly6ypgG6LG3fiLFmBDLnCrJNb_XK40ay?usp=sharing to data/raw
-    path = 'data/raw/'
+    input_dir = 'data/raw/'
     input_file = 'all_rows_all_columns.csv'
+    output_dir = 'data/derived/'
     output_full_file = 'all_rows_important_columns.csv'
     output_train_file = 'train_rows_important_columns.csv'
-    input_path = os.path.join(path, input_file)
+    input_path = os.path.join(input_dir, input_file)
     output_array = list()
     train_array = list()
     indices = [0, 3, 8, 9, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55,
@@ -29,7 +30,7 @@ if __name__ == "__main__":
         (output_full_file, output_array),
         (output_train_file, train_array),
     ]:
-        with open(os.path.join(path, file_name), mode='w') as output_file:
+        with open(os.path.join(output_dir, file_name), mode='w') as output_file:
             output_csv = csv.writer(output_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
             for row in source_array:
                 output_csv.writerow(row)
