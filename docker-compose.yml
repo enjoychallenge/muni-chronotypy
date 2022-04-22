@@ -2,20 +2,20 @@ version: '3.3'
 
 services:
    postgresql:
-      image: kartoza/postgis:11.0-2.5
+      image: postgis/postgis:14-3.2-alpine
       volumes:
-        - ./deps/postgresql/data:/var/lib/postgresql
+        - ./deps/postgresql/data:/var/lib/postgresql/data
         - ./data:/data
       ports:
         - "25433:5432"
       environment:
-         - USERNAME=docker
-         - PASS=docker
-         - ALLOW_IP_RANGE=0.0.0.0/0
+         - POSTGRES_USER=docker
+         - POSTGRES_PASSWORD=docker
+         - POSTGRES_DB=gis
       restart: on-failure
 
    gdal:
-      image: osgeo/gdal:alpine-normal-3.0.3
+      image: osgeo/gdal:ubuntu-small-3.4.2
       volumes:
         - ./data:/data
 
