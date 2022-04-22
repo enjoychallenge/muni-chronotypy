@@ -17,6 +17,7 @@ services:
 
    gdal:
       image: osgeo/gdal:ubuntu-small-3.4.2
+      user: ${UID_GID}
       volumes:
         - ./data:/data
 
