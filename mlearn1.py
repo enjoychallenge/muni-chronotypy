@@ -2,7 +2,7 @@
 
 # compare algorithms
 import pandas as pd
-from pandas import read_csv
+from pandas import set_option
 from pandas.plotting import scatter_matrix
 from matplotlib import pyplot
 from sklearn.model_selection import train_test_split
@@ -27,16 +27,39 @@ conn = psycopg2.connect(settings.PG_CONN)
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s [%(filename)s] [%(levelname)s]:\t%(message)s')
 logger = logging.getLogger(__name__)
 
+logger.info('****************************************************************************************************')
+logger.info('****************************************************************************************************')
+logger.info('****************************************************************************************************')
+logger.info('****************************************************************************************************')
+logger.info('****************************************************************************************************')
+logger.info('****************************************************************************************************')
 logger.info(f"Let's learn something.")
+logger.info('****************************************************************************************************')
 
 # Load dataset
 logger.info(f"  Reading from DB")
 dataset = pd.read_sql('select * from train_rows_important_columns', con=conn)
 
 logger.info(f"  Scattering matrix")
-# scatter_matrix(dataset)
+scatter_matrix(dataset)
 logger.info(f"  Showing pyplot")
-# pyplot.show()
+pyplot.show()
+
+set_option('display.width', 100)
+set_option('precision', 2)
+logger.info('****************************************************************************************************')
+logger.info(f'Describe each attribute\n{dataset.describe()}')
+
+logger.info('****************************************************************************************************')
+count_class = dataset.groupby('trenovacitypkod').size()
+logger.info(f'Show target data distribution\n{count_class}')
+
+logger.info('****************************************************************************************************')
+correlations = dataset.corr(method='pearson')
+logger.info(f'Show correlation between attributes\n{correlations}')
+
+logger.info('****************************************************************************************************')
+logger.info(f'Show attribute skewness\n{dataset.skew()}')
 
 # # Split-out validation dataset
 array = dataset.values
@@ -44,15 +67,16 @@ X = array[:, 2:-1]
 y = array[:, -1]
 y = np.array(y, dtype='uint8')
 
-logger.info(X[:5])
-logger.info(y[:5])
+logger.info(f'\n{X[:5]}')
+logger.info(f'\n{y[:5]}')
+
 logger.info(f"  Prepare datasets")
 X_train, X_validation, Y_train, Y_validation = train_test_split(X, y, test_size=0.20, random_state=1, shuffle=True)
 
 logger.info(f'X: train={X_train.shape}, validation={X_validation.shape}')
 logger.info(f'Y: train={Y_train.shape}, validation={Y_validation.shape}')
 
-
+logger.info('****************************************************************************************************')
 # # Spot Check Algorithms
 models = []
 models.append(('LR', LogisticRegression(solver='liblinear', multi_class='ovr')))
@@ -79,18 +103,24 @@ for name, model in models:
 # NB: 0.460277 (0.109231)
 # SVM: 0.543874 (0.019460)
 
-model = DecisionTreeClassifier()
+logger.info('****************************************************************************************************')
+best_model = models[3]
+logger.info(f'Best model: {best_model[0]}')
+model = best_model[1]
+logger.info(f'Results for fit')
 model.fit(X_train, Y_train)
 predictions = model.predict(X_validation)
 
 logger.info(f'accuracy_score={accuracy_score(Y_validation, predictions)}')
-logger.info(f'confusion_matrix={confusion_matrix(Y_validation, predictions)}')
-logger.info(f'classification_report={classification_report(Y_validation, predictions)}')
+logger.info(f'confusion_matrix=\n{confusion_matrix(Y_validation, predictions)}')
+logger.info(f'classification_report=\n{classification_report(Y_validation, predictions)}')
 
+logger.info('****************************************************************************************************')
+logger.info(f'Results for predict')
 predictions = model.predict(X)
 logger.info(f'accuracy_score={accuracy_score(y, predictions)}')
-logger.info(f'confusion_matrix={confusion_matrix(y, predictions)}')
-logger.info(f'classification_report={classification_report(y, predictions)}')
+logger.info(f'confusion_matrix=\n{confusion_matrix(y, predictions)}')
+logger.info(f'classification_report=\n{classification_report(y, predictions)}')
 
 df_chronotyp = pd.DataFrame({'chronotyp_guessed': predictions})
 df_export = pd.concat([dataset, df_chronotyp], axis=1, sort=False)
