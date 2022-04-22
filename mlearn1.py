@@ -129,7 +129,7 @@ logger.info(f'Describe each attribute\n{all_rows_ds.describe()}')
 
 all_predictions = model.predict(all_rows)
 
-df_chronotyp = pd.DataFrame({'chronotyp_guessed': all_predictions})
+df_chronotyp = pd.DataFrame({'predikce': all_predictions})
 df_export = pd.concat([all_rows_ds.loc[:, ['kod']], df_chronotyp], axis=1, sort=False)
 
 with sql_engine.connect() as con:
