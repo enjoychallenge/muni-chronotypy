@@ -31,7 +31,6 @@ upload-data:
 	rclone copy --progress data/derived gdrive-chronotopy:/06_Vystupy/01_priprava_terenovaci_casti/strojove_uceni/derived
 
 learn:
-	mkdir -p data/derived
 	docker-compose run --rm --no-deps trainer python /app/mlearn1.py
 
 bash:
