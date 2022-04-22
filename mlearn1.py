@@ -19,10 +19,10 @@ from sklearn.metrics import confusion_matrix
 from sklearn.metrics import accuracy_score
 import numpy as np
 import logging
-import psycopg2
 import settings
+import sqlalchemy
 
-conn = psycopg2.connect(settings.PG_CONN)
+sql_engine = sqlalchemy.create_engine(settings.PG_URL)
 
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s [%(filename)s] [%(levelname)s]:\t%(message)s')
 logger = logging.getLogger(__name__)
@@ -38,7 +38,7 @@ logger.info('*******************************************************************
 
 # Load dataset
 logger.info(f"  Reading from DB")
-dataset = pd.read_sql('select * from train_rows_important_columns', con=conn)
+dataset = pd.read_sql('select * from train_rows_important_columns', con=sql_engine)
 
 logger.info(f"  Scattering matrix")
 scatter_matrix(dataset)
@@ -123,5 +123,14 @@ logger.info(f'confusion_matrix=\n{confusion_matrix(y, predictions)}')
 logger.info(f'classification_report=\n{classification_report(y, predictions)}')
 
 df_chronotyp = pd.DataFrame({'chronotyp_guessed': predictions})
-df_export = pd.concat([dataset, df_chronotyp], axis=1, sort=False)
-df_export.to_csv('data/derived/zsj_full_guess.csv', encoding='utf-8', index=False)
+df_export = pd.concat([dataset.loc[:, ['fid']], df_chronotyp], axis=1, sort=False)
+
+with sql_engine.connect() as con:
+	con.execute("DROP TABLE IF EXISTS train_rows_predictions CASCADE;")
+
+df_export.to_sql("train_rows_predictions", sql_engine)
+
+with sql_engine.connect() as con:
+	with open("data/predictions-views.sql") as file:
+		query = sqlalchemy.text(file.read())
+		con.execute(query)
