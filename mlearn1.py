@@ -18,8 +18,11 @@ from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import accuracy_score
 import numpy as np
-
 import logging
+import psycopg2
+import settings
+
+conn = psycopg2.connect(settings.PG_CONN)
 
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s [%(filename)s] [%(levelname)s]:\t%(message)s')
 logger = logging.getLogger(__name__)
@@ -27,9 +30,8 @@ logger = logging.getLogger(__name__)
 logger.info(f"Let's learn something.")
 
 # Load dataset
-url = "data/derived/train_rows_important_columns.csv"
-logger.info(f"  Reading csv")
-dataset = read_csv(url, )
+logger.info(f"  Reading from DB")
+dataset = pd.read_sql('select * from train_rows_important_columns', con=conn)
 
 logger.info(f"  Scattering matrix")
 # scatter_matrix(dataset)

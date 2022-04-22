@@ -20,7 +20,9 @@ services:
         - ./data:/data
 
    trainer:
-      image: continuumio/anaconda3:2021.11
+      build:
+        context: .
+        dockerfile: Dockerfile
       user: ${UID_GID}
       volumes:
         - ./data:/data
