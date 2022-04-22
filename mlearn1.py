@@ -40,8 +40,7 @@ logger.info(f"  Showing pyplot")
 
 # # Split-out validation dataset
 array = dataset.values
-# X = array[:, 1:69]
-X = array[:, 1:4]
+X = array[:, 2:-1]
 y = array[:, -1]
 y = np.array(y, dtype='uint8')
 
