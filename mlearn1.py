@@ -130,6 +130,21 @@ with sql_engine.connect() as con:
 
 df_export.to_sql("train_rows_predictions", sql_engine)
 
+all_rows_ds = pd.read_sql('select * from all_rows_important_columns', con=sql_engine)
+all_rows = all_rows_ds.values[:, 2:-1]
+logger.info('****************************************************************************************************')
+logger.info(f'Describe each attribute\n{all_rows_ds.describe()}')
+
+all_predictions = model.predict(all_rows)
+
+df_chronotyp = pd.DataFrame({'chronotyp_guessed': all_predictions})
+df_export = pd.concat([all_rows_ds.loc[:, ['fid']], df_chronotyp], axis=1, sort=False)
+
+with sql_engine.connect() as con:
+	con.execute("DROP TABLE IF EXISTS all_rows_predictions CASCADE;")
+
+df_export.to_sql("all_rows_predictions", sql_engine)
+
 with sql_engine.connect() as con:
 	with open("data/predictions-views.sql") as file:
 		query = sqlalchemy.text(file.read())
