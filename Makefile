@@ -20,11 +20,9 @@ db-import:
 db-ensure-views:
 	docker-compose run -e PGPASSWORD=docker --entrypoint "psql -U docker -p 5432 -h postgresql gis" --rm postgresql psql -f /data/views.sql
 
-db-guess-import:
-	docker-compose run --rm gdal ogr2ogr -overwrite -oo HEADERS=YES -oo AUTODETECT_TYPE=YES -nln chronotyp_guess -f PostgreSQL "PG:host=postgresql port=5432 dbname=gis user=docker password=docker" data/derived/zsj_full_guess.csv
-
-db-guess-export:
-	docker-compose run --rm gdal ogr2ogr -overwrite -lco ENCODING=UTF-8 -f "ESRI Shapefile" /data/derived/chronotyp_guess.shp "PG:host=postgresql port=5432 dbname=gis user=docker password=docker" -sql "select zsj_kod, zsj_nazev, builtup_area as built_area, inhabited_flats as flats, occupied_jobs as jobs, usually_resident_population as usual_pop, retail_sales_area as retailarea, chronotyp, chronotyp_guessed as cht_guess, zsj.originalnihranice from chronotyp_guess left join zsj on zsj.kod = chronotyp_guess.zsj_kod;"
+db-predictions-export:
+	mkdir -p data/derived
+	docker-compose run --rm gdal ogr2ogr -overwrite -lco ENCODING=UTF-8 -f "ESRI Shapefile" /data/derived/predikce.shp "PG:host=postgresql port=5432 dbname=gis user=docker password=docker" -sql "select * from joint_rows_predictions_geom;"
 
 stop-all-docker-containers:
 	docker stop $$(docker ps -q)
