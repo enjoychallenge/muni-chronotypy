@@ -10,11 +10,14 @@ make up
 
 # import data to database
 make db-import
+
+# ensure database views
+make db-ensure-views
 ```
 
-## Convert data
+## Machine learning
 ```bash
-make convert
+make learn
 ```
 
 ## Upload data
