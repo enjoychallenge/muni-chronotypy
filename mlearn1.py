@@ -63,7 +63,7 @@ logger.info(f'Show attribute skewness\n{dataset.skew()}')
 
 # # Split-out validation dataset
 array = dataset.values
-X = array[:, 2:-1]
+X = array[:, 1:-1]
 y = array[:, -1]
 y = np.array(y, dtype='uint8')
 
@@ -123,27 +123,27 @@ logger.info(f'confusion_matrix=\n{confusion_matrix(y, predictions)}')
 logger.info(f'classification_report=\n{classification_report(y, predictions)}')
 
 df_chronotyp = pd.DataFrame({'chronotyp_guessed': predictions})
-df_export = pd.concat([dataset.loc[:, ['fid']], df_chronotyp], axis=1, sort=False)
+df_export = pd.concat([dataset.loc[:, ['kod']], df_chronotyp], axis=1, sort=False)
 
 with sql_engine.connect() as con:
 	con.execute("DROP TABLE IF EXISTS train_rows_predictions CASCADE;")
 
 df_export.to_sql("train_rows_predictions", sql_engine)
 
-all_rows_ds = pd.read_sql('select * from all_rows_important_columns', con=sql_engine)
-all_rows = all_rows_ds.values[:, 2:-1]
+all_rows_ds = pd.read_sql('select * from joint_rows_important_columns', con=sql_engine)
+all_rows = all_rows_ds.values[:, 1:-1]
 logger.info('****************************************************************************************************')
 logger.info(f'Describe each attribute\n{all_rows_ds.describe()}')
 
 all_predictions = model.predict(all_rows)
 
 df_chronotyp = pd.DataFrame({'chronotyp_guessed': all_predictions})
-df_export = pd.concat([all_rows_ds.loc[:, ['fid']], df_chronotyp], axis=1, sort=False)
+df_export = pd.concat([all_rows_ds.loc[:, ['kod']], df_chronotyp], axis=1, sort=False)
 
 with sql_engine.connect() as con:
-	con.execute("DROP TABLE IF EXISTS all_rows_predictions CASCADE;")
+	con.execute("DROP TABLE IF EXISTS joint_rows_predictions CASCADE;")
 
-df_export.to_sql("all_rows_predictions", sql_engine)
+df_export.to_sql("joint_rows_predictions", sql_engine)
 
 with sql_engine.connect() as con:
 	with open("data/predictions-views.sql") as file:
