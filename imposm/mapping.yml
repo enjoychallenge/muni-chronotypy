@@ -1,0 +1,17 @@
+tables:
+  school:
+    columns:
+    - name: osm_id
+      type: id
+    - name: geometry
+      type: validated_geometry
+    - name: area
+      type: area
+    - name: osm_key
+      type: mapping_key
+    - name: osm_value
+      type: mapping_value
+    mapping:
+      amenity:
+      - school
+    type: polygon

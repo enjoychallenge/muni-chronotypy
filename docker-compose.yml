@@ -34,7 +34,7 @@ services:
         dockerfile: Dockerfile
       image: imposm:latest
       volumes:
-        - ./temp:/tmp
+        - ./temp:/temp
         - ./temp:/go/bin/temp
         - ./imposm:/app/imposm
       user: ${UID_GID}

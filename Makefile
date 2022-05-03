@@ -47,3 +47,11 @@ build:
 imposm-download-data:
 	mkdir -p temp/imposm
 	docker-compose -f docker-compose.yml run --rm --no-deps imposm wget -O /tmp/imposm/sample.osm.pbf https://download.geofabrik.de/europe/czech-republic-latest.osm.pbf
+
+imposm-import-data:
+	docker-compose -f docker-compose.yml up -d postgresql
+	docker-compose -f docker-compose.yml run --rm imposm imposm import -config /app/imposm/config.json -dbschema-import osm_import -dbschema-production osm -dbschema-backup osm_backup -read /temp/imposm/sample.osm.pbf -write
+
+imposm-bash:
+	docker-compose run --rm imposm bash
+
