@@ -15,6 +15,7 @@ psql:
 db-import:
 	docker-compose run --rm gdal ogr2ogr -nln all_rows_all_columns -overwrite -f PostgreSQL "PG:host=postgresql port=5432 dbname=gis user=docker password=docker" /data/raw/stavebni_objekty_jmk_atributy_3035.gpkg stavebni_objekty_jmk_atributy_3035
 	docker-compose run --rm gdal ogr2ogr -nln joint_rows_ruian -overwrite -f PostgreSQL "PG:host=postgresql port=5432 dbname=gis user=docker password=docker" data/raw/stavebni_objekty_jmk_3035_full_geom.gpkg stavebni_objekty_jmk_3035
+	docker-compose run --rm gdal ogr2ogr -nln corrections_1 -where "opravy is not Null" -overwrite -f PostgreSQL "PG:host=postgresql port=5432 dbname=gis user=docker password=docker" "/vsizip/data/raw/predikce_opr.zip/predikce.shp" predikce
 
 db-ensure-views:
 	docker-compose run -e PGPASSWORD=docker --entrypoint "psql -U docker -p 5432 -h postgresql gis" --rm postgresql psql -f /data/views.sql
