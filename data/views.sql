@@ -4,9 +4,11 @@ as
 with all_with_rank as (select *,
                               rank() over(partition by kod order by st_area(geom) desc, id asc) area_rank
                        from all_rows_all_columns)
-select *
-from all_with_rank
-where area_rank = 1
+select awr.*,
+       c.opravy
+from all_with_rank awr left join
+     corrections_1 c on c.kod = awr.kod
+where awr.area_rank = 1
 ;
 
 DROP VIEW IF EXISTS joint_rows_important_columns CASCADE;
@@ -80,7 +82,7 @@ select
        "charakterzsjkod",
 --        "calculated_index_skola",
 --        "calculated_index_65_plus",
-       "trenovacitypkod"
+       COALESCE("opravy", "trenovacitypkod") "trenovacitypkod"
 from joint_rows_all_columns
 -- Remove 55 rows without zpusobvyuzitikod
 where zpusobvyuzitikod is not null
