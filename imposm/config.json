@@ -1,0 +1,5 @@
+{
+  "cachedir": "/tmp/imposm_cache",
+  "connection": "postgis://docker:docker@postgresql:5432/gis?prefix=NONE",
+  "mapping": "/app/imposm/mapping.yml"
+}
