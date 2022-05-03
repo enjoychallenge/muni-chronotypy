@@ -27,3 +27,16 @@ services:
       volumes:
         - ./data:/data
         - .:/app
+
+   imposm:
+      build:
+        context: imposm
+        dockerfile: Dockerfile
+      image: imposm:latest
+      volumes:
+        - ./temp:/tmp
+        - ./temp:/go/bin/temp
+        - ./imposm:/app/imposm
+      user: ${UID_GID}
+      depends_on:
+        - postgresql
