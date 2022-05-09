@@ -11,6 +11,12 @@ make up
 # import data to database
 make db-import
 
+# download OSM data
+make imposm-download-data
+
+# import OSM data into DB
+make imposm-import-data
+
 # ensure database views
 make db-ensure-views
 ```
