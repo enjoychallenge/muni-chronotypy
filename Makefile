@@ -51,6 +51,7 @@ imposm-download-data:
 imposm-import-data:
 	docker-compose -f docker-compose.yml up -d postgresql
 	docker-compose -f docker-compose.yml run --rm imposm imposm import -config /app/imposm/config.json -dbschema-import osm_import -dbschema-production osm -dbschema-backup osm_backup -read /temp/imposm/sample.osm.pbf -write
+	docker-compose run -e PGPASSWORD=docker --entrypoint "psql -U docker -p 5432 -h postgresql gis" --rm postgresql psql -f /imposm/after_imposm.sql
 
 imposm-bash:
 	docker-compose run --rm imposm bash

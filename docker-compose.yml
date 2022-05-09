@@ -6,6 +6,7 @@ services:
       volumes:
         - ./deps/postgresql/data:/var/lib/postgresql/data
         - ./data:/data
+        - ./imposm:/imposm
       ports:
         - "25433:5432"
       environment:
