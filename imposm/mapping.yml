@@ -14,4 +14,32 @@ tables:
     mapping:
       amenity:
       - school
+      - kindergarten
+      - college
+      building:
+      - school
+      - kindergarten
+      - college
     type: polygon
+  school_node:
+    columns:
+    - name: osm_id
+      type: id
+    - name: geometry
+      type: validated_geometry
+    - name: area
+      type: area
+    - name: osm_key
+      type: mapping_key
+    - name: osm_value
+      type: mapping_value
+    mapping:
+      amenity:
+      - school
+      - kindergarten
+      - college
+      building:
+      - school
+      - kindergarten
+      - college
+    type: point
