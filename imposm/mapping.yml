@@ -7,10 +7,12 @@ tables:
       type: validated_geometry
     - name: area
       type: area
-    - name: osm_key
-      type: mapping_key
-    - name: osm_value
-      type: mapping_value
+    - key: amenity
+      name: amenity
+      type: string
+    - key: building
+      name: building
+      type: string
     mapping:
       amenity:
       - school
@@ -29,10 +31,12 @@ tables:
       type: validated_geometry
     - name: area
       type: area
-    - name: osm_key
-      type: mapping_key
-    - name: osm_value
-      type: mapping_value
+    - key: amenity
+      name: amenity
+      type: string
+    - key: building
+      name: building
+      type: string
     mapping:
       amenity:
       - school

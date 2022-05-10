@@ -6,7 +6,9 @@ with all_with_rank as (select *,
                        from all_rows_all_columns)
 select awr.*,
        c.opravy,
-       osm.is_school
+       osm.osm_id,
+       osm.osm_amenity,
+       osm.osm_building
 from all_with_rank awr left join
      corrections_1 c on c.kod = awr.kod left join
      joint_rows_ruian_osm osm on osm.kod = awr.kod
@@ -84,19 +86,10 @@ select
        "charakterzsjkod",
 --        "calculated_index_skola",
 --        "calculated_index_65_plus",
-       "is_school",
+       "osm_amenity",
+       "osm_building",
        COALESCE("opravy", "trenovacitypkod") "trenovacitypkod"
 from joint_rows_all_columns
 -- Remove 55 rows without zpusobvyuzitikod
 where zpusobvyuzitikod is not null
 ;
-
-
-DROP VIEW IF EXISTS train_rows_important_columns CASCADE;
-create view train_rows_important_columns
-AS
-select *
-from joint_rows_important_columns
-where "trenovacitypkod" is not null
-;
-
