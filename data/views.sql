@@ -5,13 +5,13 @@ with all_with_rank as (select *,
                               rank() over(partition by kod order by st_area(geom) desc, id asc) area_rank
                        from all_rows_all_columns)
 select awr.*,
-       c.opravy,
+       coalesce(c2.oprava, c2.trenovacit) new_trenovacitypkod,
        osm.osm_id,
        osm.osm_amenity,
        osm.osm_building
 from all_with_rank awr left join
-     corrections_1 c on c.kod = awr.kod left join
-     joint_rows_ruian_osm osm on osm.kod = awr.kod
+     joint_rows_ruian_osm osm on osm.kod = awr.kod left join
+     corrections_2 c2 on c2.kod = awr.kod
 where awr.area_rank = 1
 ;
 
@@ -88,7 +88,7 @@ select
 --        "calculated_index_65_plus",
        "osm_amenity",
        "osm_building",
-       COALESCE("opravy", "trenovacitypkod") "trenovacitypkod"
+       new_trenovacitypkod "trenovacitypkod"
 from joint_rows_all_columns
 -- Remove 55 rows without zpusobvyuzitikod
 where zpusobvyuzitikod is not null
