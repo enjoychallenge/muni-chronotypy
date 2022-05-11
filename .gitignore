@@ -2,3 +2,4 @@
 /data/derived
 /.idea
 deps/postgresql/data
+/temp
