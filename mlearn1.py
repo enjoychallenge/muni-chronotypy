@@ -51,12 +51,22 @@ logger.info('*******************************************************************
 
 # Load dataset
 logger.info(f"  Reading from DB")
-all_rows_ds = pd.read_sql('select * from joint_rows_important_columns', con=sql_engine)
-exp_values = all_rows_ds['trenovacitypkod']
-del all_rows_ds['trenovacitypkod']
-all_rows_ds = feature_to_dummy(all_rows_ds, 'osm_amenity', drop=True)
-all_rows_ds = feature_to_dummy(all_rows_ds, 'osm_building', drop=True)
-all_rows_ds = pd.concat([all_rows_ds, exp_values], axis=1, sort=False)
+all_rows_ds_full = pd.read_sql('select * from joint_rows_important_columns', con=sql_engine)
+all_rows_ds_full['finaltypkod'] = all_rows_ds_full.apply(
+    lambda row: 9 if (row.osm_amenity in ('college', 'kindergarten', 'school') and row.osm_building != 'university')
+                  or (row.osm_building in ('college', 'kindergarten', 'school') and row.osm_amenity != 'university')
+    else None,
+    axis=1)
+
+all_rows_ds = all_rows_ds_full.loc[all_rows_ds_full['finaltypkod'].isnull()]
+del all_rows_ds['osm_amenity']
+del all_rows_ds['osm_building']
+del all_rows_ds['finaltypkod']
+# exp_values = all_rows_ds['trenovacitypkod']
+# del all_rows_ds['trenovacitypkod']
+# all_rows_ds = feature_to_dummy(all_rows_ds, 'osm_amenity', drop=True)
+# all_rows_ds = feature_to_dummy(all_rows_ds, 'osm_building', drop=True)
+# all_rows_ds = pd.concat([all_rows_ds, exp_values], axis=1, sort=False)
 
 dataset = all_rows_ds.loc[all_rows_ds['trenovacitypkod'] > 0]
 
@@ -110,11 +120,11 @@ results = []
 names = []
 kfold = StratifiedKFold(n_splits=7, random_state=1, shuffle=True, )
 for name, model in models:
-	logger.info(f'Starting training model {name}')
-	cv_results = cross_val_score(model, X_train, Y_train, cv=kfold, scoring='accuracy')
-	results.append(cv_results)
-	names.append(name)
-	logger.info('%s: %f (%f)' % (name, cv_results.mean(), cv_results.std()))
+    logger.info(f'Starting training model {name}')
+    cv_results = cross_val_score(model, X_train, Y_train, cv=kfold, scoring='accuracy')
+    results.append(cv_results)
+    names.append(name)
+    logger.info('%s: %f (%f)' % (name, cv_results.mean(), cv_results.std()))
 
 # LR: 0.631028 (0.107070)
 # LDA: 0.627668 (0.056587)
@@ -149,14 +159,15 @@ logger.info(f'Describe each attribute\n{all_rows_ds.describe()}')
 all_predictions = model.predict(all_rows)
 
 df_chronotyp = pd.DataFrame({'predikce': all_predictions})
-df_export = pd.concat([all_rows_ds.loc[:, ['kod']], df_chronotyp], axis=1, sort=False)
+df_predictions = pd.concat([all_rows_ds.loc[:, ['kod']], df_chronotyp], axis=1, sort=False)
+joined_df = all_rows_ds_full.join(df_predictions.set_index('kod'), on='kod', how='left')
 
 with sql_engine.connect() as con:
-	con.execute("DROP TABLE IF EXISTS joint_rows_predictions CASCADE;")
+    con.execute("DROP TABLE IF EXISTS joint_rows_predictions CASCADE;")
 
-df_export.to_sql("joint_rows_predictions", sql_engine)
+joined_df.to_sql("joint_rows_predictions", sql_engine)
 
 with sql_engine.connect() as con:
-	with open("data/predictions-views.sql") as file:
-		query = sqlalchemy.text(file.read())
-		con.execute(query)
+    with open("data/predictions-views.sql") as file:
+        query = sqlalchemy.text(file.read())
+        con.execute(query)
