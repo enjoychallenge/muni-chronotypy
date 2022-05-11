@@ -2,7 +2,7 @@ CREATE INDEX idx_joint_rows_ruian_geom ON joint_rows_ruian USING GIST (geom);
 
 DROP table IF EXISTS imposm_school_3035 CASCADE;
 create table imposm_school_3035 as
-select st_transform(st_buffer(sch.geometry, 20), 3035) geom_3035_buffer,
+select st_transform(st_buffer(sch.geometry, 2), 3035) geom_3035_buffer,
        sch.*
 from osm_import.school sch
 ;
