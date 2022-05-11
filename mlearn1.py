@@ -25,18 +25,6 @@ import sqlalchemy
 sql_engine = sqlalchemy.create_engine(settings.PG_URL)
 
 
-def feature_to_dummy(df: pd.DataFrame, column, drop=False):
-    ''' take a serie from a dataframe,
-        convert it to dummy and name it like feature_value
-        - df is a dataframe
-        - column is the name of the column to be transformed
-        - if drop is true, the serie is removed from dataframe'''
-    tmp = pd.get_dummies(df[column], prefix=column, prefix_sep='_')
-    df = pd.concat([df, tmp], axis=1, sort=False)
-    if drop:
-        del df[column]
-    return df
-
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s [%(filename)s] [%(levelname)s]:\t%(message)s')
 logger = logging.getLogger(__name__)
 
@@ -62,11 +50,6 @@ all_rows_ds = all_rows_ds_full.loc[all_rows_ds_full['finaltypkod'].isnull()]
 del all_rows_ds['osm_amenity']
 del all_rows_ds['osm_building']
 del all_rows_ds['finaltypkod']
-# exp_values = all_rows_ds['trenovacitypkod']
-# del all_rows_ds['trenovacitypkod']
-# all_rows_ds = feature_to_dummy(all_rows_ds, 'osm_amenity', drop=True)
-# all_rows_ds = feature_to_dummy(all_rows_ds, 'osm_building', drop=True)
-# all_rows_ds = pd.concat([all_rows_ds, exp_values], axis=1, sort=False)
 
 dataset = all_rows_ds.loc[all_rows_ds['trenovacitypkod'] > 0]
 
