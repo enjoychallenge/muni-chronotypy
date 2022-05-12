@@ -35,7 +35,9 @@ joint_rows_ruian_osm_with_osm_type as (
                 when schn.building is not null then 23
                end osm_type
     from joint_rows_ruian ruian left join
-         imposm_school_3035 sch on st_contains(sch.geom_3035_buffer, ruian.geom) left join
+         imposm_school_3035 sch on st_contains(sch.geom_3035_buffer, ruian.geom) or
+                                   (st_intersects(sch.geom_3035_buffer, ruian.geom) and
+                                   st_area(ST_Intersection(sch.geom_3035_buffer, ruian.geom)) >= 0.5 * st_area(ruian.geom)) left join
          imposm_school_3035_node schn on sch.osm_id is null and st_within(schn.geom_3035, ruian.geom))
      ,
 joint_rows_ruian_osm_with_rank as (
