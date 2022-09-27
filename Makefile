@@ -54,3 +54,5 @@ imposm-import-data:
 imposm-bash:
 	docker-compose run --rm imposm bash
 
+cell-import-csv:
+	docker-compose run --rm --no-deps trainer python /app/import_csv.py
