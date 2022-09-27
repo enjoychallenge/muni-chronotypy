@@ -39,19 +39,16 @@ logger.info('*******************************************************************
 
 # Load dataset
 logger.info(f"  Reading from DB")
-all_rows_ds_full = pd.read_sql('select * from joint_rows_important_columns', con=sql_engine)
-all_rows_ds_full['finaltypkod'] = all_rows_ds_full.apply(
-    lambda row: 9 if (row.osm_amenity in ('college', 'kindergarten', 'school') and row.osm_building != 'university')
-                  or (row.osm_building in ('college', 'kindergarten', 'school') and row.osm_amenity != 'university')
-    else None,
-    axis=1)
+all_rows_ds_full = pd.read_sql('''select cv.*, ascii(t.type) - ascii('A') + 1 type
+from cell_training t inner join
+     cell_values cv on t.sxy_id = cv.sxy_id
+where cv.resident_population is not null
+  and cv.accessibility_city_center_public_transport_8_levels is not null
+;''', con=sql_engine)
 
-all_rows_ds = all_rows_ds_full.loc[all_rows_ds_full['finaltypkod'].isnull()]
-del all_rows_ds['osm_amenity']
-del all_rows_ds['osm_building']
-del all_rows_ds['finaltypkod']
+all_rows_ds = all_rows_ds_full
 
-dataset = all_rows_ds.loc[all_rows_ds['trenovacitypkod'] > 0]
+dataset = all_rows_ds.copy()
 
 logger.info(f"  Scattering matrix")
 scatter_matrix(dataset)
@@ -64,7 +61,7 @@ logger.info('*******************************************************************
 logger.info(f'Describe each attribute\n{dataset.describe()}')
 
 logger.info('****************************************************************************************************')
-count_class = dataset.groupby('trenovacitypkod').size()
+count_class = dataset.groupby('type').size()
 logger.info(f'Show target data distribution\n{count_class}')
 
 logger.info('****************************************************************************************************')
@@ -109,12 +106,12 @@ for name, model in models:
     names.append(name)
     logger.info('%s: %f (%f)' % (name, cv_results.mean(), cv_results.std()))
 
-# LR: 0.631028 (0.107070)
-# LDA: 0.627668 (0.056587)
-# KNN: 0.500000 (0.058633)
-# CART: 0.540119 (0.072839)
-# NB: 0.460277 (0.109231)
-# SVM: 0.543874 (0.019460)
+# LR: 0.461321 (0.078462)
+# LDA: 0.416714 (0.062598)
+# KNN: 0.339921 (0.087462)
+# CART: 0.480802 (0.039210)
+# NB: 0.434783 (0.077533)
+# SVM: 0.269339 (0.005357)
 
 logger.info('****************************************************************************************************')
 best_model = models[3]
@@ -140,17 +137,17 @@ all_rows = all_rows_ds.values[:, 1:-1]
 logger.info(f'Describe each attribute\n{all_rows_ds.describe()}')
 
 all_predictions = model.predict(all_rows)
-
-df_chronotyp = pd.DataFrame({'predikce': all_predictions})
-df_predictions = pd.concat([all_rows_ds.loc[:, ['kod']], df_chronotyp], axis=1, sort=False)
-joined_df = all_rows_ds_full.join(df_predictions.set_index('kod'), on='kod', how='left')
-
-with sql_engine.connect() as con:
-    con.execute("DROP TABLE IF EXISTS joint_rows_predictions CASCADE;")
-
-joined_df.to_sql("joint_rows_predictions", sql_engine)
-
-with sql_engine.connect() as con:
-    with open("data/predictions-views.sql") as file:
-        query = sqlalchemy.text(file.read())
-        con.execute(query)
+#
+# df_chronotyp = pd.DataFrame({'predikce': all_predictions})
+# df_predictions = pd.concat([all_rows_ds.loc[:, ['kod']], df_chronotyp], axis=1, sort=False)
+# joined_df = all_rows_ds_full.join(df_predictions.set_index('kod'), on='kod', how='left')
+#
+# with sql_engine.connect() as con:
+#     con.execute("DROP TABLE IF EXISTS joint_rows_predictions CASCADE;")
+#
+# joined_df.to_sql("joint_rows_predictions", sql_engine)
+#
+# with sql_engine.connect() as con:
+#     with open("data/predictions-views.sql") as file:
+#         query = sqlalchemy.text(file.read())
+#         con.execute(query)
