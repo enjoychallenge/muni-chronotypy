@@ -42,8 +42,8 @@ logger.info(f"  Reading from DB")
 all_rows_ds_full = pd.read_sql('''select cv.*, ascii(t.type) - ascii('A') + 1 type
 from cell_training t inner join
      cell_values cv on t.sxy_id = cv.sxy_id
-where cv.resident_population is not null
-  and cv.accessibility_city_center_public_transport_8_levels is not null
+where cv.resident_population_91c66b_brno is not null
+  and cv.access_city_center_public_transport_8_lvls_5db20f_brno is not null
 ;''', con=sql_engine)
 
 all_rows_ds = all_rows_ds_full
