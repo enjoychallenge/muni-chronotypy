@@ -229,17 +229,17 @@ logger.info(f'Describe each attribute\n{all_rows_ds.describe()}')
 
 # this is actually same as model.predict(X) few lines above
 all_predictions = model.predict(all_rows)
-#
-# df_chronotyp = pd.DataFrame({'predikce': all_predictions})
-# df_predictions = pd.concat([all_rows_ds.loc[:, ['kod']], df_chronotyp], axis=1, sort=False)
-# joined_df = all_rows_ds_full.join(df_predictions.set_index('kod'), on='kod', how='left')
-#
-# with sql_engine.connect() as con:
-#     con.execute("DROP TABLE IF EXISTS joint_rows_predictions CASCADE;")
-#
-# joined_df.to_sql("joint_rows_predictions", sql_engine)
-#
-# with sql_engine.connect() as con:
-#     with open("data/predictions-views.sql") as file:
-#         query = sqlalchemy.text(file.read())
-#         con.execute(query)
+
+df_chronotyp = pd.DataFrame({'predikce': all_predictions})
+df_predictions = pd.concat([all_rows_ds.loc[:, ['kod']], df_chronotyp], axis=1, sort=False)
+joined_df = all_rows_ds_full.join(df_predictions.set_index('kod'), on='kod', how='left')
+
+with sql_engine.connect() as con:
+    con.execute("DROP TABLE IF EXISTS joint_rows_predictions CASCADE;")
+
+joined_df.to_sql("joint_rows_predictions", sql_engine)
+
+with sql_engine.connect() as con:
+    with open("data/predictions-views.sql") as file:
+        query = sqlalchemy.text(file.read())
+        con.execute(query)
