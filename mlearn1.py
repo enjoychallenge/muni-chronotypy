@@ -50,10 +50,10 @@ all_rows_ds = all_rows_ds_full
 
 dataset = all_rows_ds.copy()
 
-logger.info(f"  Scattering matrix")
-scatter_matrix(dataset)
-logger.info(f"  Showing pyplot")
-pyplot.show()
+# logger.info(f"  Scattering matrix")
+# scatter_matrix(dataset)
+# logger.info(f"  Showing pyplot")
+# pyplot.show()
 
 set_option('display.width', 100)
 set_option('precision', 2)
