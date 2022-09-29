@@ -206,7 +206,7 @@ logger.info('*******************************************************************
 best_model = models[3]
 logger.info(f'Best model: {best_model[0]}')
 model = best_model[1]
-logger.info(f'Results for fit')
+logger.info(f'Results for validation set')
 model.fit(X_train, Y_train)
 predictions = model.predict(X_validation)
 
@@ -215,7 +215,7 @@ logger.info(f'confusion_matrix=\n{confusion_matrix(Y_validation, predictions)}')
 logger.info(f'classification_report=\n{classification_report(Y_validation, predictions)}')
 
 logger.info('****************************************************************************************************')
-logger.info(f'Results for predict')
+logger.info(f'Results for whole dataset')
 predictions = model.predict(X)
 logger.info(f'accuracy_score={accuracy_score(y, predictions)}')
 logger.info(f'confusion_matrix=\n{confusion_matrix(y, predictions)}')
