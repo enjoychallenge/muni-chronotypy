@@ -2,9 +2,6 @@
 
 # compare algorithms
 import pandas as pd
-from sklearn.metrics import classification_report
-from sklearn.metrics import confusion_matrix
-from sklearn.metrics import accuracy_score
 import logging
 import settings
 import sqlalchemy
@@ -122,24 +119,18 @@ X, y, X_train, X_validation, Y_train, Y_validation = mlearn_util.split_dataset(d
 
 cross_val_results = mlearn_util.models_cross_validation(X_train, Y_train)
 
-logger.info('****************************************************************************************************')
 best_model = cross_val_results[1]
 logger.info(f'Best model: {best_model[0]}')
 model = best_model[1]
-logger.info(f'Results for validation set')
 model.fit(X_train, Y_train)
-validation_predictions = model.predict(X_validation)
 
-logger.info(f'accuracy_score={accuracy_score(Y_validation, validation_predictions)}')
-logger.info(f'confusion_matrix=\n{confusion_matrix(Y_validation, validation_predictions)}')
-logger.info(f'classification_report=\n{classification_report(Y_validation, validation_predictions)}')
+logger.info('****************************************************************************************************')
+logger.info(f'Results for validation set')
+accuracy_score = mlearn_util.evaluate_model(model, X_validation, Y_validation)
 
 logger.info('****************************************************************************************************')
 logger.info(f'Results for whole dataset')
-predictions = model.predict(X)
-logger.info(f'accuracy_score={accuracy_score(y, predictions)}')
-logger.info(f'confusion_matrix=\n{confusion_matrix(y, predictions)}')
-logger.info(f'classification_report=\n{classification_report(y, predictions)}')
+mlearn_util.evaluate_model(model, X, y)
 
 logger.info('****************************************************************************************************')
 all_rows = all_rows_ds.values[:, 1:-1]
@@ -163,4 +154,4 @@ with sql_engine.connect() as con:
 
 logger.info('****************************************************************************************************')
 logger.info(f'Best model: {best_model[0]}')
-logger.info(f'accuracy_score={accuracy_score(Y_validation, validation_predictions)}')
+logger.info(f'accuracy_score={accuracy_score}')
