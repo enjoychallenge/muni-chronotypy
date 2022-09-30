@@ -104,3 +104,16 @@ def evaluate_model(model, input_attributes, annotations):
     logger.info(f'confusion_matrix=\n{confusion_matrix(annotations, validation_predictions)}')
     logger.info(f'classification_report=\n{classification_report(annotations, validation_predictions)}')
     return accuracy_score(annotations, validation_predictions)
+
+def fit_and_evaluate_model(model, X_train, Y_train, X_validation, Y_validation, X, y):
+    model.fit(X_train, Y_train)
+
+    logger.info('****************************************************************************************************')
+    logger.info(f'Results for validation set')
+    validation_accuracy_score = evaluate_model(model, X_validation, Y_validation)
+
+    logger.info('****************************************************************************************************')
+    logger.info(f'Results for whole dataset')
+    evaluate_model(model, X, y)
+
+    return model, validation_accuracy_score

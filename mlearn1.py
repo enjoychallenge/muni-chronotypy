@@ -122,15 +122,7 @@ cross_val_results = mlearn_util.models_cross_validation(X_train, Y_train)
 best_model = cross_val_results[1]
 logger.info(f'Best model: {best_model[0]}')
 model = best_model[1]
-model.fit(X_train, Y_train)
-
-logger.info('****************************************************************************************************')
-logger.info(f'Results for validation set')
-accuracy_score = mlearn_util.evaluate_model(model, X_validation, Y_validation)
-
-logger.info('****************************************************************************************************')
-logger.info(f'Results for whole dataset')
-mlearn_util.evaluate_model(model, X, y)
+model, validation_accuracy_score = mlearn_util.fit_and_evaluate_model(model, X_train, Y_train, X_validation, Y_validation, X, y)
 
 logger.info('****************************************************************************************************')
 all_rows = all_rows_ds.values[:, 1:-1]
@@ -154,4 +146,4 @@ with sql_engine.connect() as con:
 
 logger.info('****************************************************************************************************')
 logger.info(f'Best model: {best_model[0]}')
-logger.info(f'accuracy_score={accuracy_score}')
+logger.info(f'accuracy_score={validation_accuracy_score}')
