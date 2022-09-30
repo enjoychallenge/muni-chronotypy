@@ -1,6 +1,8 @@
 import logging
-from pandas import set_option
 
+import numpy as np
+from pandas import set_option
+from sklearn.model_selection import train_test_split
 
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s [%(filename)s] [%(levelname)s]:\t%(message)s')
 logger = logging.getLogger(__name__)
@@ -38,3 +40,22 @@ def print_dataset_info(dataset, grouping_column):
 
     logger.info('****************************************************************************************************')
     logger.info(f'Show attribute skewness\n{dataset.skew()}')
+
+
+def split_dataset(dataset):
+    # # Split-out validation dataset
+    array = dataset.values
+    X = array[:, 1:-1]
+    y = array[:, -1]
+    y = np.array(y, dtype='uint8')
+
+    logger.info(f'\n{X[:5]}')
+    logger.info(f'\n{y[:5]}')
+
+    logger.info(f"  Prepare datasets")
+    X_train, X_validation, Y_train, Y_validation = train_test_split(X, y, test_size=0.20, random_state=1, shuffle=True)
+
+    logger.info(f'X: train={X_train.shape}, validation={X_validation.shape}')
+    logger.info(f'Y: train={Y_train.shape}, validation={Y_validation.shape}')
+    return X, y, X_train, X_validation, Y_train, Y_validation
+
