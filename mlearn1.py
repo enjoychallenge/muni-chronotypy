@@ -2,18 +2,9 @@
 
 # compare algorithms
 import pandas as pd
-from sklearn.model_selection import cross_val_score
-from sklearn.model_selection import StratifiedKFold
-from sklearn.linear_model import LogisticRegression
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
-from sklearn.naive_bayes import GaussianNB
-from sklearn.svm import SVC
 from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import accuracy_score
-import numpy as np
 import logging
 import settings
 import sqlalchemy
@@ -129,37 +120,10 @@ dataset = all_rows_ds.loc[all_rows_ds['tren_typ'] > 0]
 mlearn_util.print_dataset_info(dataset, 'tren_typ')
 X, y, X_train, X_validation, Y_train, Y_validation = mlearn_util.split_dataset(dataset)
 
-logger.info('****************************************************************************************************')
-# # Spot Check Algorithms
-models = []
-models.append(('LR', LogisticRegression(solver='liblinear', multi_class='ovr')))
-models.append(('LDA', LinearDiscriminantAnalysis()))
-models.append(('KNN', KNeighborsClassifier()))
-models.append(('CART', DecisionTreeClassifier()))
-models.append(('NB', GaussianNB()))
-models.append(('SVM', SVC(gamma='auto')))
-# evaluate each model in turn
-results = []
-names = []
-kfold = StratifiedKFold(n_splits=7, random_state=1, shuffle=True, )
-for name, model in models:
-    # See https://stackoverflow.com/a/42266274
-    # or https://scikit-learn.org/stable/modules/cross_validation.html#cross-validation
-    logger.info(f'Starting cross validation using model {name}')
-    cv_results = cross_val_score(model, X_train, Y_train, cv=kfold, scoring='accuracy')
-    results.append(cv_results)
-    names.append(name)
-    logger.info('%s: %f (%f)' % (name, cv_results.mean(), cv_results.std()))
-
-# LR: 0.461321 (0.078462)
-# LDA: 0.416714 (0.062598)
-# KNN: 0.339921 (0.087462)
-# CART: 0.480802 (0.039210)
-# NB: 0.434783 (0.077533)
-# SVM: 0.269339 (0.005357)
+cross_val_results = mlearn_util.models_cross_validation(X_train, Y_train)
 
 logger.info('****************************************************************************************************')
-best_model = models[1]
+best_model = cross_val_results[1]
 logger.info(f'Best model: {best_model[0]}')
 model = best_model[1]
 logger.info(f'Results for validation set')
