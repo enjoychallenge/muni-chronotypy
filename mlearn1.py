@@ -227,6 +227,7 @@ logger.info('*******************************************************************
 all_rows = all_rows_ds.values[:, 1:-1]
 logger.info(f'Describe each attribute\n{all_rows_ds.describe()}')
 
+# this is actually same as model.predict(X) few lines above
 all_predictions = model.predict(all_rows)
 #
 # df_chronotyp = pd.DataFrame({'predikce': all_predictions})
