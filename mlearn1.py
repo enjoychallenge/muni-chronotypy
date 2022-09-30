@@ -40,7 +40,7 @@ logger.info('*******************************************************************
 # Load dataset
 logger.info(f"  Reading from DB")
 all_rows_ds_full = pd.read_sql('''
-select t.sxy_id,
+select cv.sxy_id,
 -- resident_population_91c66b_brno,
 access_city_center_public_transport_8_lvls_5db20f_brno,
 builtup_area_bc23b0_brno,
@@ -118,15 +118,15 @@ us_res_pop_high_edu_lvl_no_education_622c58_jmk,
 -- us_res_pop_high_edu_lvl_secondary_not_graduated_df1937_jmk,
 -- us_res_pop_high_edu_lvl_tertiary_university_d9de47_jmk,
 ascii(t.type) - ascii('A') + 1 as tren_typ
-from cell_training t inner join
-     cell_values cv on t.sxy_id = cv.sxy_id
+from cell_values cv left join
+     cell_training t on t.sxy_id = cv.sxy_id
 where cv.resident_population_91c66b_brno is not null
   and cv.access_city_center_public_transport_8_lvls_5db20f_brno is not null
 ;''', con=sql_engine)
 
 all_rows_ds = all_rows_ds_full
 
-dataset = all_rows_ds.copy()
+dataset = all_rows_ds.loc[all_rows_ds['tren_typ'] > 0]
 
 # logger.info(f"  Scattering matrix")
 # scatter_matrix(dataset)
@@ -227,7 +227,6 @@ logger.info('*******************************************************************
 all_rows = all_rows_ds.values[:, 1:-1]
 logger.info(f'Describe each attribute\n{all_rows_ds.describe()}')
 
-# this is actually same as model.predict(X) few lines above
 all_predictions = model.predict(all_rows)
 
 df_chronotyp = pd.DataFrame({'predikce': all_predictions})
