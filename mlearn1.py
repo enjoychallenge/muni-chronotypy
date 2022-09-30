@@ -189,7 +189,9 @@ results = []
 names = []
 kfold = StratifiedKFold(n_splits=7, random_state=1, shuffle=True, )
 for name, model in models:
-    logger.info(f'Starting training model {name}')
+    # See https://stackoverflow.com/a/42266274
+    # or https://scikit-learn.org/stable/modules/cross_validation.html#cross-validation
+    logger.info(f'Starting cross validation using model {name}')
     cv_results = cross_val_score(model, X_train, Y_train, cv=kfold, scoring='accuracy')
     results.append(cv_results)
     names.append(name)
