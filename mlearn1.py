@@ -117,7 +117,7 @@ us_res_pop_high_edu_lvl_no_education_622c58_jmk,
 -- us_res_pop_high_edu_lvl_primary_89a90c_jmk,
 -- us_res_pop_high_edu_lvl_secondary_not_graduated_df1937_jmk,
 -- us_res_pop_high_edu_lvl_tertiary_university_d9de47_jmk,
-ascii(t.type) - ascii('A') + 1 type
+ascii(t.type) - ascii('A') + 1 as tren_typ
 from cell_training t inner join
      cell_values cv on t.sxy_id = cv.sxy_id
 where cv.resident_population_91c66b_brno is not null
@@ -139,7 +139,7 @@ logger.info('*******************************************************************
 logger.info(f'Describe each attribute\n{dataset.describe()}')
 
 logger.info('****************************************************************************************************')
-count_class = dataset.groupby('type').size()
+count_class = dataset.groupby('tren_typ').size()
 logger.info(f'Show target data distribution\n{count_class}')
 
 logger.info('****************************************************************************************************')
