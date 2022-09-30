@@ -2,9 +2,6 @@
 
 # compare algorithms
 import pandas as pd
-from pandas import set_option
-from pandas.plotting import scatter_matrix
-from matplotlib import pyplot
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import StratifiedKFold
@@ -21,6 +18,8 @@ import numpy as np
 import logging
 import settings
 import sqlalchemy
+
+from mlearn import mlearn_util
 
 sql_engine = sqlalchemy.create_engine(settings.PG_URL)
 
@@ -128,37 +127,7 @@ all_rows_ds = all_rows_ds_full
 
 dataset = all_rows_ds.loc[all_rows_ds['tren_typ'] > 0]
 
-# logger.info(f"  Scattering matrix")
-# scatter_matrix(dataset)
-# logger.info(f"  Showing pyplot")
-# pyplot.show()
-
-set_option('display.width', 100)
-set_option('precision', 2)
-logger.info('****************************************************************************************************')
-logger.info(f'Describe each attribute\n{dataset.describe()}')
-
-logger.info('****************************************************************************************************')
-count_class = dataset.groupby('tren_typ').size()
-logger.info(f'Show target data distribution\n{count_class}')
-
-logger.info('****************************************************************************************************')
-correlations = dataset.corr(method='pearson')
-logger.info(f'Show correlation between attributes\n{correlations}')
-
-unstack_correlations = correlations.abs().unstack()
-logger.info(f'unstack_correlations\n{unstack_correlations}')
-pairs_to_drop = set()
-cols = correlations.columns
-for i in range(0, correlations.shape[1]):
-    for j in range(0, i + 1):
-        pairs_to_drop.add((cols[i], cols[j]))
-au_corr = unstack_correlations.drop(labels=pairs_to_drop).sort_values(ascending=False)
-# au_corr = unstack_correlations.sort_values(ascending=False)
-logger.info(f'Highest correlations\n{au_corr[0:20]}')
-
-logger.info('****************************************************************************************************')
-logger.info(f'Show attribute skewness\n{dataset.skew()}')
+mlearn_util.print_dataset_info(dataset, 'tren_typ')
 
 # # Split-out validation dataset
 array = dataset.values
@@ -205,7 +174,7 @@ for name, model in models:
 # SVM: 0.269339 (0.005357)
 
 logger.info('****************************************************************************************************')
-best_model = models[3]
+best_model = models[1]
 logger.info(f'Best model: {best_model[0]}')
 model = best_model[1]
 logger.info(f'Results for validation set')
