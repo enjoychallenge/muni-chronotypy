@@ -103,19 +103,23 @@ us_res_pop_high_edu_lvl_no_education_622c58_jmk,
 -- us_res_pop_high_edu_lvl_primary_89a90c_jmk,
 -- us_res_pop_high_edu_lvl_secondary_not_graduated_df1937_jmk,
 -- us_res_pop_high_edu_lvl_tertiary_university_d9de47_jmk,
-ascii(t.type) - ascii('A') + 1 as tren_typ
+ascii(t.type) - ascii('A') + 1 as tren_typ_6,
+case
+    when t.type in ('A', 'B', 'C') then 1
+    when t.type in ('D', 'E', 'F') then 2
+    end as tren_typ_2
 from cell_values cv left join
      cell_training t on t.sxy_id = cv.sxy_id
 where cv.builtup_area_bc23b0_brno > 500
   and cv.access_city_center_public_transport_8_lvls_5db20f_brno is not null
 ;''', con=sql_engine)
 
-all_rows_ds = all_rows_ds_full
-model, all_predictions = mlearn_util.get_model_and_predictions_from_dataset(all_rows_ds, model_name='LDA')
+all_rows_ds_6 = all_rows_ds_full.drop(['tren_typ_2'], axis=1)
+model_6, all_predictions_6 = mlearn_util.get_model_and_predictions_from_dataset(all_rows_ds_6, model_name='LDA')
 
-df_chronotyp = pd.DataFrame({'predikce': all_predictions})
-df_predictions = pd.concat([all_rows_ds.loc[:, ['sxy_id']], df_chronotyp], axis=1, sort=False)
-joined_df = all_rows_ds_full.join(df_predictions.set_index('sxy_id'), on='sxy_id', how='left')
+df_chronotyp_6 = pd.DataFrame({'predikce_6': all_predictions_6})
+df_predictions_6 = pd.concat([all_rows_ds_6.loc[:, ['sxy_id']], df_chronotyp_6], axis=1, sort=False)
+joined_df = all_rows_ds_full.join(df_predictions_6.set_index('sxy_id'), on='sxy_id', how='left')
 
 with sql_engine.connect() as con:
     con.execute("DROP TABLE IF EXISTS joint_rows_predictions CASCADE;")
@@ -128,5 +132,5 @@ with sql_engine.connect() as con:
         con.execute(query)
 
 logger.info('****************************************************************************************************')
-logger.info(f'Best model: {model[0]}')
-logger.info(f'accuracy_score={model[-1]}')
+logger.info(f'Best model for tren_typ_6: {model_6[0]}')
+logger.info(f'accuracy_score for tren_typ_6={model_6[-1]}')
