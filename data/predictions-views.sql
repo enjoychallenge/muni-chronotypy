@@ -2,8 +2,9 @@ DROP MATERIALIZED VIEW IF EXISTS joint_rows_predictions_geom CASCADE;
 create MATERIALIZED view joint_rows_predictions_geom
 AS
 select pred.sxy_id,
-       pred.tren_typ,
-       pred.predikce,
+       chr((ascii('A') - 1 + pred.tren_typ)::integer) as tren_typ,
+       chr((ascii('A') - 1 + pred.predikce)::integer) as predikce_6,
+       case when pred.predikce in (1,2,3) then 'ABC' else 'DEF' end as predikce_2,
        ST_MakeEnvelope(
                    cast(split_part(pred.sxy_id, '-', 1) as int) * cast(split_part(pred.sxy_id, '-', 2) as int),
                    cast(split_part(pred.sxy_id, '-', 1) as int) * cast(split_part(pred.sxy_id, '-', 3) as int),
