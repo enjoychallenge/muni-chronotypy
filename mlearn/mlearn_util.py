@@ -117,3 +117,25 @@ def fit_and_evaluate_model(model, X_train, Y_train, X_validation, Y_validation, 
     evaluate_model(model, X, y)
 
     return model, validation_accuracy_score
+
+
+def get_model_and_predictions_from_dataset(dataset):
+    tren_typ_name = dataset.columns[-1]
+    training_dataset = dataset.loc[dataset[tren_typ_name] > 0]
+    print_dataset_info(training_dataset, tren_typ_name)
+    X, y, X_train, X_validation, Y_train, Y_validation = split_dataset(training_dataset)
+
+    cross_val_results = models_cross_validation(X_train, Y_train)
+
+    best_model = cross_val_results[1]
+    logger.info(f'Best model: {best_model[0]}')
+    model = best_model[1]
+    model, validation_accuracy_score = fit_and_evaluate_model(model, X_train, Y_train, X_validation, Y_validation, X, y)
+
+    logger.info('****************************************************************************************************')
+    all_rows = dataset.values[:, 1:-1]
+    logger.info(f'Describe each attribute\n{dataset.describe()}')
+
+    all_predictions = model.predict(all_rows)
+    return best_model + (validation_accuracy_score,), all_predictions
+
