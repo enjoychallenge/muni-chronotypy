@@ -3,6 +3,14 @@ import logging
 import numpy as np
 from pandas import set_option
 from sklearn.model_selection import train_test_split
+from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import StratifiedKFold
+from sklearn.linear_model import LogisticRegression
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+from sklearn.naive_bayes import GaussianNB
+from sklearn.svm import SVC
 
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s [%(filename)s] [%(levelname)s]:\t%(message)s')
 logger = logging.getLogger(__name__)
@@ -59,3 +67,26 @@ def split_dataset(dataset):
     logger.info(f'Y: train={Y_train.shape}, validation={Y_validation.shape}')
     return X, y, X_train, X_validation, Y_train, Y_validation
 
+
+def models_cross_validation(train_input, train_annotations):
+    logger.info('****************************************************************************************************')
+    # # Spot Check Algorithms
+    models = []
+    results = []
+    models.append(('LR', LogisticRegression(solver='liblinear', multi_class='ovr')))
+    models.append(('LDA', LinearDiscriminantAnalysis()))
+    models.append(('KNN', KNeighborsClassifier()))
+    models.append(('CART', DecisionTreeClassifier()))
+    models.append(('NB', GaussianNB()))
+    models.append(('SVM', SVC(gamma='auto')))
+    # evaluate each model in turn
+    kfold = StratifiedKFold(n_splits=7, random_state=1, shuffle=True, )
+    for name, model in models:
+        # See https://stackoverflow.com/a/42266274
+        # or https://scikit-learn.org/stable/modules/cross_validation.html#cross-validation
+        logger.info(f'Starting cross validation using model {name}')
+        cv_results = cross_val_score(model, train_input, train_annotations, cv=kfold, scoring='accuracy')
+        logger.info('%s: %f (%f)' % (name, cv_results.mean(), cv_results.std()))
+        results.append((name, model, cv_results.mean(), cv_results.std()))
+
+    return results
