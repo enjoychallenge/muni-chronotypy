@@ -5,12 +5,17 @@ from pandas import set_option
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import StratifiedKFold
+
 from sklearn.linear_model import LogisticRegression
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from sklearn.naive_bayes import GaussianNB
 from sklearn.svm import SVC
+
+from sklearn.metrics import classification_report
+from sklearn.metrics import confusion_matrix
+from sklearn.metrics import accuracy_score
 
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s [%(filename)s] [%(levelname)s]:\t%(message)s')
 logger = logging.getLogger(__name__)
@@ -90,3 +95,12 @@ def models_cross_validation(train_input, train_annotations):
         results.append((name, model, cv_results.mean(), cv_results.std()))
 
     return results
+
+
+def evaluate_model(model, input_attributes, annotations):
+    validation_predictions = model.predict(input_attributes)
+
+    logger.info(f'accuracy_score={accuracy_score(annotations, validation_predictions)}')
+    logger.info(f'confusion_matrix=\n{confusion_matrix(annotations, validation_predictions)}')
+    logger.info(f'classification_report=\n{classification_report(annotations, validation_predictions)}')
+    return accuracy_score(annotations, validation_predictions)
