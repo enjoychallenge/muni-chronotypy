@@ -111,24 +111,7 @@ where cv.builtup_area_bc23b0_brno > 500
 ;''', con=sql_engine)
 
 all_rows_ds = all_rows_ds_full
-
-tren_typ_name = all_rows_ds.columns[-1]
-dataset = all_rows_ds.loc[all_rows_ds[tren_typ_name] > 0]
-mlearn_util.print_dataset_info(dataset, tren_typ_name)
-X, y, X_train, X_validation, Y_train, Y_validation = mlearn_util.split_dataset(dataset)
-
-cross_val_results = mlearn_util.models_cross_validation(X_train, Y_train)
-
-best_model = cross_val_results[1]
-logger.info(f'Best model: {best_model[0]}')
-model = best_model[1]
-model, validation_accuracy_score = mlearn_util.fit_and_evaluate_model(model, X_train, Y_train, X_validation, Y_validation, X, y)
-
-logger.info('****************************************************************************************************')
-all_rows = all_rows_ds.values[:, 1:-1]
-logger.info(f'Describe each attribute\n{all_rows_ds.describe()}')
-
-all_predictions = model.predict(all_rows)
+model, all_predictions = mlearn_util.get_model_and_predictions_from_dataset(all_rows_ds)
 
 df_chronotyp = pd.DataFrame({'predikce': all_predictions})
 df_predictions = pd.concat([all_rows_ds.loc[:, ['sxy_id']], df_chronotyp], axis=1, sort=False)
@@ -145,5 +128,5 @@ with sql_engine.connect() as con:
         con.execute(query)
 
 logger.info('****************************************************************************************************')
-logger.info(f'Best model: {best_model[0]}')
-logger.info(f'accuracy_score={validation_accuracy_score}')
+logger.info(f'Best model: {model[0]}')
+logger.info(f'accuracy_score={model[-1]}')
