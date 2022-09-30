@@ -112,9 +112,9 @@ where cv.builtup_area_bc23b0_brno > 500
 
 all_rows_ds = all_rows_ds_full
 
-dataset = all_rows_ds.loc[all_rows_ds['tren_typ'] > 0]
-
-mlearn_util.print_dataset_info(dataset, 'tren_typ')
+tren_typ_name = all_rows_ds.columns[-1]
+dataset = all_rows_ds.loc[all_rows_ds[tren_typ_name] > 0]
+mlearn_util.print_dataset_info(dataset, tren_typ_name)
 X, y, X_train, X_validation, Y_train, Y_validation = mlearn_util.split_dataset(dataset)
 
 cross_val_results = mlearn_util.models_cross_validation(X_train, Y_train)
