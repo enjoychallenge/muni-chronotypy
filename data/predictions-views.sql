@@ -1,12 +1,15 @@
 DROP MATERIALIZED VIEW IF EXISTS joint_rows_predictions_geom CASCADE;
 create MATERIALIZED view joint_rows_predictions_geom
 AS
-select te.kod,
-       te.trenovacitypkod::int train_kod,
-       coalesce(te.finaltypkod, te.predikce)::int final_kod,
-       ru.geom,
-       te.finaltypkod::int alg_kod,
-       te.predikce::int ml_kod
-from joint_rows_predictions te
-inner join joint_rows_ruian ru on ru.kod = te.kod
+select pred.sxy_id,
+       pred.tren_typ,
+       pred.predikce,
+       ST_MakeEnvelope(
+                   cast(split_part(pred.sxy_id, '-', 1) as int) * cast(split_part(pred.sxy_id, '-', 2) as int),
+                   cast(split_part(pred.sxy_id, '-', 1) as int) * cast(split_part(pred.sxy_id, '-', 3) as int),
+                   cast(split_part(pred.sxy_id, '-', 1) as int) * (cast(split_part(pred.sxy_id, '-', 2) as int) + 1),
+                   cast(split_part(pred.sxy_id, '-', 1) as int) * (cast(split_part(pred.sxy_id, '-', 3) as int) + 1),
+                   3035
+           ) as geometry
+from joint_rows_predictions pred
 ;

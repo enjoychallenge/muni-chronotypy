@@ -231,8 +231,8 @@ logger.info(f'Describe each attribute\n{all_rows_ds.describe()}')
 all_predictions = model.predict(all_rows)
 
 df_chronotyp = pd.DataFrame({'predikce': all_predictions})
-df_predictions = pd.concat([all_rows_ds.loc[:, ['kod']], df_chronotyp], axis=1, sort=False)
-joined_df = all_rows_ds_full.join(df_predictions.set_index('kod'), on='kod', how='left')
+df_predictions = pd.concat([all_rows_ds.loc[:, ['sxy_id']], df_chronotyp], axis=1, sort=False)
+joined_df = all_rows_ds_full.join(df_predictions.set_index('sxy_id'), on='sxy_id', how='left')
 
 with sql_engine.connect() as con:
     con.execute("DROP TABLE IF EXISTS joint_rows_predictions CASCADE;")
