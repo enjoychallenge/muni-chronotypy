@@ -111,7 +111,7 @@ where cv.builtup_area_bc23b0_brno > 500
 ;''', con=sql_engine)
 
 all_rows_ds = all_rows_ds_full
-model, all_predictions = mlearn_util.get_model_and_predictions_from_dataset(all_rows_ds)
+model, all_predictions = mlearn_util.get_model_and_predictions_from_dataset(all_rows_ds, model_name='LDA')
 
 df_chronotyp = pd.DataFrame({'predikce': all_predictions})
 df_predictions = pd.concat([all_rows_ds.loc[:, ['sxy_id']], df_chronotyp], axis=1, sort=False)
