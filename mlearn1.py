@@ -2,7 +2,6 @@
 
 # compare algorithms
 import pandas as pd
-from sklearn.model_selection import train_test_split
 from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import StratifiedKFold
 from sklearn.linear_model import LogisticRegression
@@ -128,21 +127,7 @@ all_rows_ds = all_rows_ds_full
 dataset = all_rows_ds.loc[all_rows_ds['tren_typ'] > 0]
 
 mlearn_util.print_dataset_info(dataset, 'tren_typ')
-
-# # Split-out validation dataset
-array = dataset.values
-X = array[:, 1:-1]
-y = array[:, -1]
-y = np.array(y, dtype='uint8')
-
-logger.info(f'\n{X[:5]}')
-logger.info(f'\n{y[:5]}')
-
-logger.info(f"  Prepare datasets")
-X_train, X_validation, Y_train, Y_validation = train_test_split(X, y, test_size=0.20, random_state=1, shuffle=True)
-
-logger.info(f'X: train={X_train.shape}, validation={X_validation.shape}')
-logger.info(f'Y: train={Y_train.shape}, validation={Y_validation.shape}')
+X, y, X_train, X_validation, Y_train, Y_validation = mlearn_util.split_dataset(dataset)
 
 logger.info('****************************************************************************************************')
 # # Spot Check Algorithms
