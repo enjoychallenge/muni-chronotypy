@@ -118,7 +118,7 @@ us_res_pop_high_edu_lvl_no_education_622c58_jmk,
 ascii(t.type) - ascii('A') + 1 as tren_typ
 from cell_values cv left join
      cell_training t on t.sxy_id = cv.sxy_id
-where cv.resident_population_91c66b_brno is not null
+where cv.builtup_area_bc23b0_brno > 500
   and cv.access_city_center_public_transport_8_lvls_5db20f_brno is not null
 ;''', con=sql_engine)
 
