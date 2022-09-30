@@ -243,3 +243,7 @@ with sql_engine.connect() as con:
     with open("data/predictions-views.sql") as file:
         query = sqlalchemy.text(file.read())
         con.execute(query)
+
+logger.info('****************************************************************************************************')
+logger.info(f'Best model: {best_model[0]}')
+logger.info(f'accuracy_score={accuracy_score(Y_validation, validation_predictions)}')
