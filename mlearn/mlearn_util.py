@@ -1,6 +1,8 @@
 import logging
 
 import numpy as np
+import pandas as pd
+
 from pandas import set_option
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import cross_val_score
@@ -16,6 +18,9 @@ from sklearn.svm import SVC
 from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import accuracy_score
+
+
+from . import precision_output
 
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s [%(filename)s] [%(levelname)s]:\t%(message)s')
 logger = logging.getLogger(__name__)
@@ -139,3 +144,15 @@ def get_model_and_predictions_from_dataset(dataset, model_name):
     all_predictions = model.predict(all_rows)
     return best_model + (validation_accuracy_score,), all_predictions, cross_val_results
 
+
+def make_predictions(input_ds, output_ds, *, final_model_name, pred_column_name, area, columns_to_drop=None):
+    if columns_to_drop:
+        training_ds = input_ds.drop(columns_to_drop, axis=1)
+    model_tuple, all_predictions, cross_val_results = get_model_and_predictions_from_dataset(
+        training_ds, model_name=final_model_name, )
+
+    df_predictions = pd.DataFrame({pred_column_name: all_predictions})
+    df_predictions_id = pd.concat([training_ds.loc[:, ['sxy_id']], df_predictions], axis=1, sort=False)
+
+    precision_output.output_precision(pred_column_name, area, cross_val_results, model_tuple)
+    return output_ds.join(df_predictions_id.set_index('sxy_id'), on='sxy_id', how='left')
