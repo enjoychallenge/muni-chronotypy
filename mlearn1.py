@@ -25,7 +25,7 @@ logger.info('*******************************************************************
 
 # Load dataset
 logger.info(f"  Reading from DB")
-all_rows_ds_full = pd.read_sql('''
+all_rows_brno_ds_full = pd.read_sql('''
 select cv.sxy_id,
 -- resident_population_91c66b_brno,
 access_city_center_public_transport_8_lvls_5db20f_brno,
@@ -116,25 +116,25 @@ where cv.builtup_area_bc23b0_brno > 500
 
 precision_output.prepare_csv_output()
 
-# Predicting 6 chronotopes
-all_rows_ds_6 = all_rows_ds_full.drop(['tren_typ_2'], axis=1)
-model_6, all_predictions_6, cross_val_results_6 = mlearn_util.get_model_and_predictions_from_dataset(all_rows_ds_6, model_name='LDA',)
+# Predicting 6 chronotopes for Brno
+all_rows_ds_brno_6 = all_rows_brno_ds_full.drop(['tren_typ_2'], axis=1)
+model_brno_6, all_predictions_brno_6, cross_val_results_brno_6 = mlearn_util.get_model_and_predictions_from_dataset(all_rows_ds_brno_6, model_name='LDA', )
 
-df_chronotyp_6 = pd.DataFrame({'predikce_6': all_predictions_6})
-df_predictions_6 = pd.concat([all_rows_ds_6.loc[:, ['sxy_id']], df_chronotyp_6], axis=1, sort=False)
+df_chronotyp_brno_6 = pd.DataFrame({'predikce_brno_6': all_predictions_brno_6})
+df_predictions_brno_6 = pd.concat([all_rows_ds_brno_6.loc[:, ['sxy_id']], df_chronotyp_brno_6], axis=1, sort=False)
 
-precision_output.output_precision('Prediction_6', 'Brno', cross_val_results_6, model_6)
+precision_output.output_precision('Prediction_6', 'Brno', cross_val_results_brno_6, model_brno_6)
 
-# Predicting 2 main chronotopes
-all_rows_ds_2 = all_rows_ds_full.drop(['tren_typ_6'], axis=1)
-model_2, all_predictions_2, cross_val_results_2 = mlearn_util.get_model_and_predictions_from_dataset(all_rows_ds_2, model_name='NB')
+# Predicting 2 main chronotopes for Brno
+all_rows_ds_brno_2 = all_rows_brno_ds_full.drop(['tren_typ_6'], axis=1)
+model_brno_2, all_predictions_brno_2, cross_val_results_brno_2 = mlearn_util.get_model_and_predictions_from_dataset(all_rows_ds_brno_2, model_name='NB')
 
-df_chronotyp_2 = pd.DataFrame({'predikce_2': all_predictions_2})
-df_predictions_2 = pd.concat([all_rows_ds_2.loc[:, ['sxy_id']], df_chronotyp_2], axis=1, sort=False)
+df_chronotyp_brno_2 = pd.DataFrame({'predikce_brno_2': all_predictions_brno_2})
+df_predictions_brno_2 = pd.concat([all_rows_ds_brno_2.loc[:, ['sxy_id']], df_chronotyp_brno_2], axis=1, sort=False)
 
-precision_output.output_precision('Prediction_2', 'Brno', cross_val_results_2, model_2)
+precision_output.output_precision('Prediction_2', 'Brno', cross_val_results_brno_2, model_brno_2)
 
-joined_df = all_rows_ds_full.join(df_predictions_6.set_index('sxy_id'), on='sxy_id', how='left').join(df_predictions_2.set_index('sxy_id'), on='sxy_id', how='left')
+joined_df = all_rows_brno_ds_full.join(df_predictions_brno_6.set_index('sxy_id'), on='sxy_id', how='left').join(df_predictions_brno_2.set_index('sxy_id'), on='sxy_id', how='left')
 
 with sql_engine.connect() as con:
     con.execute("DROP TABLE IF EXISTS joint_rows_predictions CASCADE;")
@@ -147,7 +147,7 @@ with sql_engine.connect() as con:
         con.execute(query)
 
 logger.info('****************************************************************************************************')
-logger.info(f'Best model for tren_typ_6: {model_6[0]}')
-logger.info(f'accuracy_score for tren_typ_6={model_6[-1]}')
-logger.info(f'Best model for tren_typ_2: {model_2[0]}')
-logger.info(f'accuracy_score for tren_typ_2={model_2[-1]}')
+logger.info(f'Best model for tren_typ_brno_6: {model_brno_6[0]}')
+logger.info(f'accuracy_score for tren_typ_brno_6={model_brno_6[-1]}')
+logger.info(f'Best model for tren_typ_brno_2: {model_brno_2[0]}')
+logger.info(f'accuracy_score for tren_typ_brno_2={model_brno_2[-1]}')
