@@ -6,7 +6,7 @@ import logging
 import settings
 import sqlalchemy
 
-from mlearn import mlearn_util
+from mlearn import mlearn_util, precision_output
 
 sql_engine = sqlalchemy.create_engine(settings.PG_URL)
 
@@ -114,19 +114,25 @@ where cv.builtup_area_bc23b0_brno > 500
   and cv.access_city_center_public_transport_8_lvls_5db20f_brno is not null
 ;''', con=sql_engine)
 
+precision_output.prepare_csv_output()
+
 # Predicting 6 chronotopes
 all_rows_ds_6 = all_rows_ds_full.drop(['tren_typ_2'], axis=1)
-model_6, all_predictions_6 = mlearn_util.get_model_and_predictions_from_dataset(all_rows_ds_6, model_name='LDA')
+model_6, all_predictions_6, cross_val_results_6 = mlearn_util.get_model_and_predictions_from_dataset(all_rows_ds_6, model_name='LDA',)
 
 df_chronotyp_6 = pd.DataFrame({'predikce_6': all_predictions_6})
 df_predictions_6 = pd.concat([all_rows_ds_6.loc[:, ['sxy_id']], df_chronotyp_6], axis=1, sort=False)
 
+precision_output.output_precision('Prediction_6', 'Brno', cross_val_results_6, model_6)
+
 # Predicting 2 main chronotopes
 all_rows_ds_2 = all_rows_ds_full.drop(['tren_typ_6'], axis=1)
-model_2, all_predictions_2 = mlearn_util.get_model_and_predictions_from_dataset(all_rows_ds_2, model_name='NB')
+model_2, all_predictions_2, cross_val_results_2 = mlearn_util.get_model_and_predictions_from_dataset(all_rows_ds_2, model_name='NB')
 
 df_chronotyp_2 = pd.DataFrame({'predikce_2': all_predictions_2})
 df_predictions_2 = pd.concat([all_rows_ds_2.loc[:, ['sxy_id']], df_chronotyp_2], axis=1, sort=False)
+
+precision_output.output_precision('Prediction_2', 'Brno', cross_val_results_2, model_2)
 
 joined_df = all_rows_ds_full.join(df_predictions_6.set_index('sxy_id'), on='sxy_id', how='left').join(df_predictions_2.set_index('sxy_id'), on='sxy_id', how='left')
 

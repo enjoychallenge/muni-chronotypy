@@ -137,5 +137,5 @@ def get_model_and_predictions_from_dataset(dataset, model_name):
     logger.info(f'Describe each attribute\n{dataset.describe()}')
 
     all_predictions = model.predict(all_rows)
-    return best_model + (validation_accuracy_score,), all_predictions
+    return best_model + (validation_accuracy_score,), all_predictions, cross_val_results
 
