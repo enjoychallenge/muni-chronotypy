@@ -3,9 +3,12 @@ create MATERIALIZED view joint_rows_predictions_geom
 AS
 select pred.sxy_id,
        chr((ascii('A') - 1 + pred.tren_typ_6)::integer) as tren_typ,
-       chr((ascii('A') - 1 + pred.predikce_brno_6)::integer) as predikce_brno_6,
+       chr((ascii('A') - 1 + pred.predikce_brno_6)::integer) as p_brno6,
        case when pred.predikce_brno_2 = 1 then 'ABC'
-            when pred.predikce_brno_2 = 2 then 'DEF' end as predikce_brno_2,
+            when pred.predikce_brno_2 = 2 then 'DEF' end as p_brno2,
+       chr((ascii('A') - 1 + pred.predikce_bmo_6)::integer) as p_bmo6,
+       case when pred.predikce_bmo_2 = 1 then 'ABC'
+            when pred.predikce_bmo_2 = 2 then 'DEF' end as p_bmo2,
        ST_MakeEnvelope(
                    cast(split_part(pred.sxy_id, '-', 1) as int) * cast(split_part(pred.sxy_id, '-', 2) as int),
                    cast(split_part(pred.sxy_id, '-', 1) as int) * cast(split_part(pred.sxy_id, '-', 3) as int),
