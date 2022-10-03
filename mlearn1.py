@@ -23,6 +23,8 @@ logger.info('*******************************************************************
 logger.info(f"Let's learn something.")
 logger.info('****************************************************************************************************')
 
+precision_output.prepare_csv_output()
+
 logger.info('****************************************************************************************************')
 logger.info('Brno')
 logger.info('****************************************************************************************************')
@@ -117,25 +119,9 @@ where cv.builtup_area_bc23b0_brno > 500
   and cv.access_city_center_public_transport_8_lvls_5db20f_brno is not null
 ;''', con=sql_engine)
 
-precision_output.prepare_csv_output()
+ds_with_brno_6 = mlearn_util.make_predictions(input_ds=all_rows_brno_ds_full, output_ds=all_rows_brno_ds_full, final_model_name='LDA', pred_column_name='predikce_brno_6', area='Brno', columns_to_drop=['tren_typ_2'])
 
-# Predicting 6 chronotopes for Brno
-all_rows_ds_brno_6 = all_rows_brno_ds_full.drop(['tren_typ_2'], axis=1)
-model_brno_6, all_predictions_brno_6, cross_val_results_brno_6 = mlearn_util.get_model_and_predictions_from_dataset(all_rows_ds_brno_6, model_name='LDA', )
-
-df_chronotyp_brno_6 = pd.DataFrame({'predikce_brno_6': all_predictions_brno_6})
-df_predictions_brno_6 = pd.concat([all_rows_ds_brno_6.loc[:, ['sxy_id']], df_chronotyp_brno_6], axis=1, sort=False)
-
-precision_output.output_precision('Prediction_6', 'Brno', cross_val_results_brno_6, model_brno_6)
-
-# Predicting 2 main chronotopes for Brno
-all_rows_ds_brno_2 = all_rows_brno_ds_full.drop(['tren_typ_6'], axis=1)
-model_brno_2, all_predictions_brno_2, cross_val_results_brno_2 = mlearn_util.get_model_and_predictions_from_dataset(all_rows_ds_brno_2, model_name='NB')
-
-df_chronotyp_brno_2 = pd.DataFrame({'predikce_brno_2': all_predictions_brno_2})
-df_predictions_brno_2 = pd.concat([all_rows_ds_brno_2.loc[:, ['sxy_id']], df_chronotyp_brno_2], axis=1, sort=False)
-
-precision_output.output_precision('Prediction_2', 'Brno', cross_val_results_brno_2, model_brno_2)
+ds_with_brno_6_2 = mlearn_util.make_predictions(input_ds=all_rows_brno_ds_full, output_ds=ds_with_brno_6, final_model_name='NB', pred_column_name='predikce_brno_2', area='Brno', columns_to_drop=['tren_typ_6'])
 
 logger.info('****************************************************************************************************')
 logger.info('BMO')
@@ -230,25 +216,11 @@ from cell_values cv left join
 where accessbility_public_transport_7_level_4b067d_bmo is not null
 ;''', con=sql_engine)
 
-# Predicting 6 chronotopes for BMO
-all_rows_ds_bmo_6 = all_rows_bmo_ds_full.drop(['tren_typ_2'], axis=1)
-model_bmo_6, all_predictions_bmo_6, cross_val_results_bmo_6 = mlearn_util.get_model_and_predictions_from_dataset(all_rows_ds_bmo_6, model_name='LDA', )
+ds_with_brno_6_2_bmo_6 = mlearn_util.make_predictions(input_ds=all_rows_bmo_ds_full, output_ds=ds_with_brno_6_2, final_model_name='LDA', pred_column_name='predikce_bmo_6', area='BMO', columns_to_drop=['tren_typ_2'])
 
-df_chronotyp_bmo_6 = pd.DataFrame({'predikce_bmo_6': all_predictions_bmo_6})
-df_predictions_bmo_6 = pd.concat([all_rows_ds_bmo_6.loc[:, ['sxy_id']], df_chronotyp_bmo_6], axis=1, sort=False)
+ds_with_brno_6_2_bmo_6_2 = mlearn_util.make_predictions(input_ds=all_rows_bmo_ds_full, output_ds=ds_with_brno_6_2_bmo_6, final_model_name='LDA', pred_column_name='predikce_bmo_2', area='BMO', columns_to_drop=['tren_typ_6'])
 
-precision_output.output_precision('Prediction_6', 'BMO', cross_val_results_bmo_6, model_bmo_6)
-
-# Predicting 2 main chronotopes for BMO
-all_rows_ds_bmo_2 = all_rows_bmo_ds_full.drop(['tren_typ_6'], axis=1)
-model_bmo_2, all_predictions_bmo_2, cross_val_results_bmo_2 = mlearn_util.get_model_and_predictions_from_dataset(all_rows_ds_bmo_2, model_name='LDA')
-
-df_chronotyp_bmo_2 = pd.DataFrame({'predikce_bmo_2': all_predictions_bmo_2})
-df_predictions_bmo_2 = pd.concat([all_rows_ds_bmo_2.loc[:, ['sxy_id']], df_chronotyp_bmo_2], axis=1, sort=False)
-
-precision_output.output_precision('Prediction_2', 'BMO', cross_val_results_bmo_2, model_bmo_2)
-
-joined_df = all_rows_bmo_ds_full.join(df_predictions_brno_6.set_index('sxy_id'), on='sxy_id', how='left').join(df_predictions_brno_2.set_index('sxy_id'), on='sxy_id', how='left').join(df_predictions_bmo_6.set_index('sxy_id'), on='sxy_id', how='left').join(df_predictions_bmo_2.set_index('sxy_id'), on='sxy_id', how='left')
+joined_df = ds_with_brno_6_2_bmo_6_2
 
 with sql_engine.connect() as con:
     con.execute("DROP TABLE IF EXISTS joint_rows_predictions CASCADE;")
@@ -261,11 +233,3 @@ with sql_engine.connect() as con:
         con.execute(query)
 
 logger.info('****************************************************************************************************')
-logger.info(f'Best model for tren_typ_brno_6: {model_brno_6[0]}')
-logger.info(f'accuracy_score for tren_typ_brno_6={model_brno_6[-1]}')
-logger.info(f'Best model for tren_typ_brno_2: {model_brno_2[0]}')
-logger.info(f'accuracy_score for tren_typ_brno_2={model_brno_2[-1]}')
-logger.info(f'Best model for tren_typ_bmo_6: {model_bmo_6[0]}')
-logger.info(f'accuracy_score for tren_typ_bmo_6={model_bmo_6[-1]}')
-logger.info(f'Best model for tren_typ_bmo_2: {model_bmo_2[0]}')
-logger.info(f'accuracy_score for tren_typ_bmo_2={model_bmo_2[-1]}')
