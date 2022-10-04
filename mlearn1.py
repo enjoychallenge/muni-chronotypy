@@ -117,6 +117,7 @@ from cell_values cv left join
      cell_training t on t.sxy_id = cv.sxy_id
 where cv.builtup_area_bc23b0_brno > 500
   and cv.access_city_center_public_transport_8_lvls_5db20f_brno is not null
+order by cv.sxy_id asc
 ;''', con=sql_engine)
 
 logger.info('****************************************************************************************************')
@@ -210,6 +211,7 @@ case
 from cell_values cv left join
      cell_training t on t.sxy_id = cv.sxy_id
 where LEFT(landcover_urban_atlas_3level_39feb2_jmk::varchar, 1) = '1'
+order by cv.sxy_id asc
 ;''', con=sql_engine)
 
 joined_df = all_rows_bmo_ds_full
