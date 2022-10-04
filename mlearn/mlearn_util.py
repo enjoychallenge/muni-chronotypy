@@ -86,7 +86,7 @@ def models_cross_validation(train_input, train_annotations):
     models.append(('LR', LogisticRegression(solver='liblinear', multi_class='ovr')))
     models.append(('LDA', LinearDiscriminantAnalysis()))
     models.append(('KNN', KNeighborsClassifier()))
-    models.append(('CART', DecisionTreeClassifier()))
+    models.append(('CART', DecisionTreeClassifier(random_state=1)))
     models.append(('NB', GaussianNB()))
     models.append(('SVM', SVC(gamma='auto')))
     # evaluate each model in turn
