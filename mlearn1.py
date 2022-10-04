@@ -108,13 +108,13 @@ us_res_pop_high_edu_lvl_no_education_622c58_jmk,
 -- us_res_pop_high_edu_lvl_primary_89a90c_jmk,
 -- us_res_pop_high_edu_lvl_secondary_not_graduated_df1937_jmk,
 -- us_res_pop_high_edu_lvl_tertiary_university_d9de47_jmk,
-ascii(t.type) - ascii('A') + 1 as tren_typ_6,
+ascii(t.typ) - ascii('A') + 1 as tren_typ_6,
 case
-    when t.type in ('A', 'B', 'C') then 1
-    when t.type in ('D', 'E', 'F') then 2
+    when t.typ in ('A', 'B', 'C') then 1
+    when t.typ in ('D', 'E', 'F') then 2
     end as tren_typ_2
 from cell_values cv left join
-     cell_training t on t.sxy_id = cv.sxy_id
+     jmk_cell_chronotopes_annotations t on t.sxy_id = cv.sxy_id
 where cv.builtup_area_bc23b0_brno > 500
   and cv.access_city_center_public_transport_8_lvls_5db20f_brno is not null
 order by cv.sxy_id asc
@@ -203,13 +203,13 @@ us_res_pop_high_edu_lvl_no_education_622c58_jmk,
 -- us_res_pop_high_edu_lvl_primary_89a90c_jmk,
 -- us_res_pop_high_edu_lvl_secondary_not_graduated_df1937_jmk,
 -- us_res_pop_high_edu_lvl_tertiary_university_d9de47_jmk,
-ascii(t.type) - ascii('A') + 1 as tren_typ_6,
+ascii(t.typ) - ascii('A') + 1 as tren_typ_6,
 case
-    when t.type in ('A', 'B', 'C') then 1
-    when t.type in ('D', 'E', 'F') then 2
+    when t.typ in ('A', 'B', 'C') then 1
+    when t.typ in ('D', 'E', 'F') then 2
     end as tren_typ_2
 from cell_values cv left join
-     cell_training t on t.sxy_id = cv.sxy_id
+     jmk_cell_chronotopes_annotations t on t.sxy_id = cv.sxy_id
 where LEFT(landcover_urban_atlas_3level_39feb2_jmk::varchar, 1) = '1'
 order by cv.sxy_id asc
 ;''', con=sql_engine)

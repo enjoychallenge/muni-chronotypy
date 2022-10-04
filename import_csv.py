@@ -22,27 +22,6 @@ conn = psycopg2.connect(settings.PG_CONN)
 conn.autocommit = True
 cursor = conn.cursor()
 
-logger.info('\nStarting with cell_training table')
-
-sql_drop = '''DROP TABLE IF EXISTS cell_training;'''
-cursor.execute(sql_drop)
-sql_create = '''CREATE TABLE cell_training(sxy_id char(15), type char(1));'''
-cursor.execute(sql_create)
-
-sql_copy = '''COPY cell_training(sxy_id, type)
-FROM '/data/raw/cell_training_bmo.csv'
-DELIMITER ','
-CSV HEADER;'''
-
-cursor.execute(sql_copy)
-
-sql_cnt = 'select count(*) from cell_training'
-cursor.execute(sql_cnt)
-cnt = cursor.fetchone()
-logger.info(f'  Rows imported into DB: {cnt[0]}')
-
-logger.info('****************************************************************************************************')
-
 logger.info('\nStarting with cell_values table')
 
 sql_drop = '''DROP TABLE IF EXISTS cell_values;'''
