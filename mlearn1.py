@@ -210,7 +210,6 @@ case
 from cell_values cv left join
      cell_training t on t.sxy_id = cv.sxy_id
 where LEFT(landcover_urban_atlas_3level_39feb2_jmk::varchar, 1) = '1'
-  and accessbility_public_transport_7_level_4b067d_bmo is not null
 ;''', con=sql_engine)
 
 joined_df = all_rows_bmo_ds_full
