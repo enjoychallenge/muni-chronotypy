@@ -155,3 +155,11 @@ def make_predictions(input_ds, output_ds, *, pred_column_name, area, columns_to_
 
     precision_output.output_precision(pred_column_name, area, cross_val_results, model_tuple)
     return output_ds.join(df_predictions_id.set_index('sxy_id'), on='sxy_id', how='left')
+
+
+def split_category_columns(data_frame, category_columns):
+    return pd.get_dummies(data_frame, columns=category_columns, dtype='bool')
+
+
+def move_columns_back(data_frame, last_columns):
+    return pd.concat([data_frame.drop(last_columns, axis=1), data_frame[last_columns]], axis=1, sort=False)
