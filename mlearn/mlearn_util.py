@@ -124,7 +124,7 @@ def fit_and_evaluate_model(model, X_train, Y_train, X_validation, Y_validation, 
     return model, validation_accuracy_score
 
 
-def get_model_and_predictions_from_dataset(dataset, model_name):
+def get_model_and_predictions_from_dataset(dataset, ):
     tren_typ_name = dataset.columns[-1]
     training_dataset = dataset.loc[dataset[tren_typ_name] > 0]
     print_dataset_info(training_dataset, tren_typ_name)
@@ -132,7 +132,7 @@ def get_model_and_predictions_from_dataset(dataset, model_name):
 
     cross_val_results = models_cross_validation(X_train, Y_train)
 
-    best_model = next(iter(model for model in cross_val_results if model[0] == model_name))
+    best_model = max(cross_val_results, key=lambda p: p[2])
     logger.info(f'Best model: {best_model[0]}')
     model = best_model[1]
     model, validation_accuracy_score = fit_and_evaluate_model(model, X_train, Y_train, X_validation, Y_validation, X, y)
@@ -145,11 +145,10 @@ def get_model_and_predictions_from_dataset(dataset, model_name):
     return best_model + (validation_accuracy_score,), all_predictions, cross_val_results
 
 
-def make_predictions(input_ds, output_ds, *, final_model_name, pred_column_name, area, columns_to_drop=None):
+def make_predictions(input_ds, output_ds, *, pred_column_name, area, columns_to_drop=None):
     if columns_to_drop:
         training_ds = input_ds.drop(columns_to_drop, axis=1)
-    model_tuple, all_predictions, cross_val_results = get_model_and_predictions_from_dataset(
-        training_ds, model_name=final_model_name, )
+    model_tuple, all_predictions, cross_val_results = get_model_and_predictions_from_dataset(training_ds, )
 
     df_predictions = pd.DataFrame({pred_column_name: all_predictions})
     df_predictions_id = pd.concat([training_ds.loc[:, ['sxy_id']], df_predictions], axis=1, sort=False)
