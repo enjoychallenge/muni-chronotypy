@@ -15,6 +15,7 @@ psql:
 db-import:
 	docker-compose run --rm gdal ogr2ogr -nln all_rows_all_columns -overwrite -f PostgreSQL "PG:host=postgresql port=5432 dbname=gis user=docker password=docker" /data/raw/stavebni_objekty_jmk_atributy_3035.gpkg stavebni_objekty_jmk_atributy_3035
 	docker-compose run --rm gdal ogr2ogr -nln jmk_cell_chronotopes_annotations -overwrite -f PostgreSQL "PG:host=postgresql port=5432 dbname=gis user=docker password=docker" /vsizip/data/raw/trenink.zip/trenink.shp trenink
+	docker-compose run --rm --no-deps trainer python /app/import_csv.py
 
 db-ensure-views:
 	docker-compose run -e PGPASSWORD=docker --entrypoint "psql -U docker -p 5432 -h postgresql gis" --rm postgresql psql -f /data/views.sql
@@ -52,6 +53,3 @@ imposm-import-data:
 
 imposm-bash:
 	docker-compose run --rm imposm bash
-
-cell-import-csv:
-	docker-compose run --rm --no-deps trainer python /app/import_csv.py
