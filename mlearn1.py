@@ -218,9 +218,9 @@ joined_df = mlearn_util.make_predictions(input_ds=all_rows_brno_ds_full, output_
 
 joined_df = mlearn_util.make_predictions(input_ds=all_rows_brno_ds_full, output_ds=joined_df, final_model_name='NB', pred_column_name='predikce_brno_2', area='Brno', columns_to_drop=['tren_typ_6'])
 
-joined_df = mlearn_util.make_predictions(input_ds=all_rows_bmo_ds_full, output_ds=joined_df, final_model_name='LDA', pred_column_name='predikce_bmo_6', area='BMO', columns_to_drop=['tren_typ_2'])
+joined_df = mlearn_util.make_predictions(input_ds=all_rows_bmo_ds_full, output_ds=joined_df, final_model_name='LR', pred_column_name='predikce_bmo_6', area='BMO', columns_to_drop=['tren_typ_2'])
 
-joined_df = mlearn_util.make_predictions(input_ds=all_rows_bmo_ds_full, output_ds=joined_df, final_model_name='LDA', pred_column_name='predikce_bmo_2', area='BMO', columns_to_drop=['tren_typ_6'])
+joined_df = mlearn_util.make_predictions(input_ds=all_rows_bmo_ds_full, output_ds=joined_df, final_model_name='LR', pred_column_name='predikce_bmo_2', area='BMO', columns_to_drop=['tren_typ_6'])
 
 with sql_engine.connect() as con:
     con.execute("DROP TABLE IF EXISTS joint_rows_predictions CASCADE;")
