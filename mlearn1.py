@@ -119,10 +119,6 @@ where cv.builtup_area_bc23b0_brno > 500
   and cv.access_city_center_public_transport_8_lvls_5db20f_brno is not null
 ;''', con=sql_engine)
 
-ds_with_brno_6 = mlearn_util.make_predictions(input_ds=all_rows_brno_ds_full, output_ds=all_rows_brno_ds_full, final_model_name='LDA', pred_column_name='predikce_brno_6', area='Brno', columns_to_drop=['tren_typ_2'])
-
-ds_with_brno_6_2 = mlearn_util.make_predictions(input_ds=all_rows_brno_ds_full, output_ds=ds_with_brno_6, final_model_name='NB', pred_column_name='predikce_brno_2', area='Brno', columns_to_drop=['tren_typ_6'])
-
 logger.info('****************************************************************************************************')
 logger.info('BMO')
 logger.info('****************************************************************************************************')
@@ -216,11 +212,15 @@ from cell_values cv left join
 where accessbility_public_transport_7_level_4b067d_bmo is not null
 ;''', con=sql_engine)
 
-ds_with_brno_6_2_bmo_6 = mlearn_util.make_predictions(input_ds=all_rows_bmo_ds_full, output_ds=ds_with_brno_6_2, final_model_name='LDA', pred_column_name='predikce_bmo_6', area='BMO', columns_to_drop=['tren_typ_2'])
+joined_df = all_rows_bmo_ds_full
 
-ds_with_brno_6_2_bmo_6_2 = mlearn_util.make_predictions(input_ds=all_rows_bmo_ds_full, output_ds=ds_with_brno_6_2_bmo_6, final_model_name='LDA', pred_column_name='predikce_bmo_2', area='BMO', columns_to_drop=['tren_typ_6'])
+joined_df = mlearn_util.make_predictions(input_ds=all_rows_brno_ds_full, output_ds=joined_df, final_model_name='LDA', pred_column_name='predikce_brno_6', area='Brno', columns_to_drop=['tren_typ_2'])
 
-joined_df = ds_with_brno_6_2_bmo_6_2
+joined_df = mlearn_util.make_predictions(input_ds=all_rows_brno_ds_full, output_ds=joined_df, final_model_name='NB', pred_column_name='predikce_brno_2', area='Brno', columns_to_drop=['tren_typ_6'])
+
+joined_df = mlearn_util.make_predictions(input_ds=all_rows_bmo_ds_full, output_ds=joined_df, final_model_name='LDA', pred_column_name='predikce_bmo_6', area='BMO', columns_to_drop=['tren_typ_2'])
+
+joined_df = mlearn_util.make_predictions(input_ds=all_rows_bmo_ds_full, output_ds=joined_df, final_model_name='LDA', pred_column_name='predikce_bmo_2', area='BMO', columns_to_drop=['tren_typ_6'])
 
 with sql_engine.connect() as con:
     con.execute("DROP TABLE IF EXISTS joint_rows_predictions CASCADE;")
