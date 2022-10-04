@@ -216,6 +216,20 @@ order by cv.sxy_id asc
 
 joined_df = all_rows_bmo_ds_full
 
+last_columns = ['tren_typ_6', 'tren_typ_2']
+
+brno_category_columns = ['landcover_urban_atlas_69ef7e_brno', 'landcover_urban_atlas_3level_39feb2_jmk']
+all_rows_brno_ds_full = mlearn_util.move_columns_back(
+    mlearn_util.split_category_columns(all_rows_brno_ds_full, brno_category_columns),
+    last_columns
+)
+
+bmo_category_columns = ['landcover_urban_atlas_3level_39feb2_jmk']
+all_rows_bmo_ds_full = mlearn_util.move_columns_back(
+    mlearn_util.split_category_columns(all_rows_bmo_ds_full, bmo_category_columns),
+    last_columns
+)
+
 joined_df = mlearn_util.make_predictions(input_ds=all_rows_brno_ds_full, output_ds=joined_df, pred_column_name='predikce_brno_6', area='Brno', columns_to_drop=['tren_typ_2'])
 
 joined_df = mlearn_util.make_predictions(input_ds=all_rows_brno_ds_full, output_ds=joined_df, pred_column_name='predikce_brno_2', area='Brno', columns_to_drop=['tren_typ_6'])
