@@ -135,6 +135,7 @@ joined_df = all_rows_bmo_ds_full
 logger.info('****************************************************************************************************')
 logger.info('Brno')
 logger.info('****************************************************************************************************')
+logger.info(f"shape={all_rows_brno_ds_full.shape}")
 
 joined_df = mlearn_util.make_predictions(input_ds=all_rows_brno_ds_full, output_ds=joined_df, pred_column_name='predikce_brno_6', area='Brno', columns_to_drop=['tren_typ_2'])
 
@@ -143,6 +144,7 @@ joined_df = mlearn_util.make_predictions(input_ds=all_rows_brno_ds_full, output_
 logger.info('****************************************************************************************************')
 logger.info('BMO')
 logger.info('****************************************************************************************************')
+logger.info(f"shape={all_rows_bmo_ds_full.shape}")
 
 joined_df = mlearn_util.make_predictions(input_ds=all_rows_bmo_ds_full, output_ds=joined_df, pred_column_name='predikce_bmo_6', area='BMO', columns_to_drop=['tren_typ_2'])
 
