@@ -45,6 +45,11 @@ with parts_with_area as (select *, st_area(geom) as part_area
      )
 select
        bug_cell_id,
+       sum(coalesce(pocetbytu, sum_byt, 0) * area_ratio) as pocetbytu,
+       PERCENTILE_CONT(0.5) WITHIN GROUP(ORDER BY coalesce(pocetpodlazi, pocpodbud, 1)) as pocetpodlazi,
+       sum(coalesce(budobyev, 0) * area_ratio) as budobyev,
+       sum(coalesce(budobytsl, 0) * area_ratio) as budobytsl,
+       sum(coalesce(budobyosl, 0) * area_ratio) as budobyosl,
        {dummy_columns}
 from parts_with_ratio
 group by bug_cell_id
