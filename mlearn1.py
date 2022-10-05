@@ -115,40 +115,34 @@ from cell_values cv left join
 order by cv.sxy_id asc
 ;''', con=sql_engine)
 
+last_columns = ['tren_typ_6', 'tren_typ_2']
+
+brno_category_columns = ['landcover_urban_atlas_69ef7e_brno', 'landcover_urban_atlas_3level_39feb2_jmk']
+ds_bmo_bug_annotation = mlearn_util.move_columns_back(
+    mlearn_util.split_category_columns(ds_bmo_bug_annotation, brno_category_columns),
+    last_columns
+)
+
+all_rows_brno_ds_full = ds_bmo_bug_annotation.loc[(ds_bmo_bug_annotation['builtup_area_bc23b0_brno'] > 500) & (ds_bmo_bug_annotation['access_city_center_public_transport_8_lvls_5db20f_brno'].notnull())]
+
+bmo_cols_to_drop = [col for col in ds_bmo_bug_annotation.columns if col.endswith('brno') or col.find('_brno_') > 0]
+ds_bmo_bug_annotation_train = ds_bmo_bug_annotation.drop(bmo_cols_to_drop, axis=1)
+bmo_filtering_columns = [col for col in ds_bmo_bug_annotation.columns if col.startswith('landcover_urban_atlas_3level_39feb2_jmk_1')]
+all_rows_bmo_ds_full = ds_bmo_bug_annotation_train.loc[ds_bmo_bug_annotation_train[bmo_filtering_columns].sum(axis=1) > 0]
+
+joined_df = all_rows_bmo_ds_full
 
 logger.info('****************************************************************************************************')
 logger.info('Brno')
 logger.info('****************************************************************************************************')
 
-all_rows_brno_ds_full = ds_bmo_bug_annotation.loc[(ds_bmo_bug_annotation['builtup_area_bc23b0_brno'] > 500) & (ds_bmo_bug_annotation['access_city_center_public_transport_8_lvls_5db20f_brno'].notnull())]
+joined_df = mlearn_util.make_predictions(input_ds=all_rows_brno_ds_full, output_ds=joined_df, pred_column_name='predikce_brno_6', area='Brno', columns_to_drop=['tren_typ_2'])
+
+joined_df = mlearn_util.make_predictions(input_ds=all_rows_brno_ds_full, output_ds=joined_df, pred_column_name='predikce_brno_2', area='Brno', columns_to_drop=['tren_typ_6'])
 
 logger.info('****************************************************************************************************')
 logger.info('BMO')
 logger.info('****************************************************************************************************')
-
-bmo_cols_to_drop = [col for col in ds_bmo_bug_annotation.columns if col.endswith('brno')]
-ds_bmo_bug_annotation_train = ds_bmo_bug_annotation.drop(bmo_cols_to_drop, axis=1)
-all_rows_bmo_ds_full = ds_bmo_bug_annotation_train.loc[ds_bmo_bug_annotation_train['landcover_urban_atlas_3level_39feb2_jmk'].astype(str).str.startswith('1')]
-
-joined_df = all_rows_bmo_ds_full
-
-last_columns = ['tren_typ_6', 'tren_typ_2']
-
-brno_category_columns = ['landcover_urban_atlas_69ef7e_brno', 'landcover_urban_atlas_3level_39feb2_jmk']
-all_rows_brno_ds_full = mlearn_util.move_columns_back(
-    mlearn_util.split_category_columns(all_rows_brno_ds_full, brno_category_columns),
-    last_columns
-)
-
-bmo_category_columns = ['landcover_urban_atlas_3level_39feb2_jmk']
-all_rows_bmo_ds_full = mlearn_util.move_columns_back(
-    mlearn_util.split_category_columns(all_rows_bmo_ds_full, bmo_category_columns),
-    last_columns
-)
-
-joined_df = mlearn_util.make_predictions(input_ds=all_rows_brno_ds_full, output_ds=joined_df, pred_column_name='predikce_brno_6', area='Brno', columns_to_drop=['tren_typ_2'])
-
-joined_df = mlearn_util.make_predictions(input_ds=all_rows_brno_ds_full, output_ds=joined_df, pred_column_name='predikce_brno_2', area='Brno', columns_to_drop=['tren_typ_6'])
 
 joined_df = mlearn_util.make_predictions(input_ds=all_rows_bmo_ds_full, output_ds=joined_df, pred_column_name='predikce_bmo_6', area='BMO', columns_to_drop=['tren_typ_2'])
 
