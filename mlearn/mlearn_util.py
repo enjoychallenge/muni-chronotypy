@@ -90,7 +90,7 @@ def models_cross_validation(train_input, train_annotations):
     models.append(('NB', GaussianNB()))
     models.append(('SVM', SVC(gamma='auto')))
     # evaluate each model in turn
-    kfold = StratifiedKFold(n_splits=7, random_state=1, shuffle=True, )
+    kfold = StratifiedKFold(n_splits=5, random_state=1, shuffle=True, )
     for name, model in models:
         # See https://stackoverflow.com/a/42266274
         # or https://scikit-learn.org/stable/modules/cross_validation.html#cross-validation
