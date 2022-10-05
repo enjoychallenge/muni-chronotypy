@@ -82,13 +82,12 @@ def main():
                 continue
             sql_parts.append(
                 f"""
-                   sum(case when part.{column} = %s then part.part_area else 0 end) {column}_{value}_area,
-                   sum(case when part.{column} = %s then part.area_ratio else 0 end) {column}_{value}_cnt
+                   sum(case when part.{column} = %s then part.part_area else 0 end) {column}_{value}_area
                 """
             )
-            params += (value, value)
+            params += (value,)
 
-    logger.info(f"Found {len(sql_parts)} not-null values, going to create {len(sql_parts) * 2} dummy columns.")
+    logger.info(f"Found {len(sql_parts)} not-null values, going to create {len(sql_parts)} dummy columns.")
 
     with sql_engine.connect() as conn:
         conn.exec_driver_sql(

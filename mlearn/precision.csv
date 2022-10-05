@@ -13,7 +13,7 @@ predikce_brno_2,Brno,cross_validation,CART,0.8513846153846154,0.1366569583312720
 predikce_brno_2,Brno,cross_validation,NB,0.8741538461538461,0.06625323482110405
 predikce_brno_2,Brno,cross_validation,SVM,0.5433846153846154,0.01514896446165069
 predikce_brno_2,Brno,accuracy,NB,0.8115942028985508,0
-predikce_bmo_6,BMO,cross_validation,LR,0.3777142857142857,0.08238089733001186
+predikce_bmo_6,BMO,cross_validation,LR,0.38571428571428573,0.0931621364797383
 predikce_bmo_6,BMO,cross_validation,LDA,0.26473469387755105,0.07551642555726716
 predikce_bmo_6,BMO,cross_validation,KNN,0.40955102040816327,0.0633937340308095
 predikce_bmo_6,BMO,cross_validation,CART,0.4092244897959184,0.07587824263333243
