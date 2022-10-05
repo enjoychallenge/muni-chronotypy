@@ -30,7 +30,7 @@ logger.info('Brno')
 logger.info('****************************************************************************************************')
 # Load dataset
 logger.info(f"  Reading from DB")
-all_rows_brno_ds_full = pd.read_sql('''
+ds_bmo_bug_annotation = pd.read_sql('''
 select cv.sxy_id,
 -- resident_population_91c66b_brno,
 access_city_center_public_transport_8_lvls_5db20f_brno,
@@ -115,10 +115,10 @@ case
     end as tren_typ_2
 from cell_values cv left join
      jmk_cell_chronotopes_annotations t on t.sxy_id = cv.sxy_id
-where cv.builtup_area_bc23b0_brno > 500
-  and cv.access_city_center_public_transport_8_lvls_5db20f_brno is not null
 order by cv.sxy_id asc
 ;''', con=sql_engine)
+
+all_rows_brno_ds_full = ds_bmo_bug_annotation.loc[(ds_bmo_bug_annotation['builtup_area_bc23b0_brno'] > 500) & (ds_bmo_bug_annotation['access_city_center_public_transport_8_lvls_5db20f_brno'].notnull())]
 
 logger.info('****************************************************************************************************')
 logger.info('BMO')
