@@ -115,20 +115,28 @@ from cell_values cv left join
 order by cv.sxy_id asc
 ;''', con=sql_engine)
 
+ds_bmo_ruian_annotation = pd.read_sql('''select * from cell_ruian_training''', con=sql_engine)
+
+ds_bmo_annotation = ds_bmo_bug_annotation.join(ds_bmo_ruian_annotation.set_index('sxy_id'), on='sxy_id', how='left')
+
+# there are missing many cells in ruian dataset (fields, forests, ...), so fill the ruian values with 0
+ruian_columns = list(ds_bmo_ruian_annotation.columns)
+ds_bmo_annotation[ruian_columns] = ds_bmo_annotation[ruian_columns].fillna(0)
+
 last_columns = ['tren_typ_6', 'tren_typ_2']
 
 brno_category_columns = ['landcover_urban_atlas_69ef7e_brno', 'landcover_urban_atlas_3level_39feb2_jmk']
-ds_bmo_bug_annotation = mlearn_util.move_columns_back(
-    mlearn_util.split_category_columns(ds_bmo_bug_annotation, brno_category_columns),
+ds_bmo_annotation = mlearn_util.move_columns_back(
+    mlearn_util.split_category_columns(ds_bmo_annotation, brno_category_columns),
     last_columns
 )
 
-all_rows_brno_ds_full = ds_bmo_bug_annotation.loc[(ds_bmo_bug_annotation['builtup_area_bc23b0_brno'] > 500) & (ds_bmo_bug_annotation['access_city_center_public_transport_8_lvls_5db20f_brno'].notnull())].reset_index(drop=True)
+all_rows_brno_ds_full = ds_bmo_annotation.loc[(ds_bmo_annotation['builtup_area_bc23b0_brno'] > 500) & (ds_bmo_annotation['access_city_center_public_transport_8_lvls_5db20f_brno'].notnull())].reset_index(drop=True)
 
-bmo_cols_to_drop = [col for col in ds_bmo_bug_annotation.columns if col.endswith('brno') or col.find('_brno_') > 0]
-ds_bmo_bug_annotation_train = ds_bmo_bug_annotation.drop(bmo_cols_to_drop, axis=1)
-bmo_filtering_columns = [col for col in ds_bmo_bug_annotation.columns if col.startswith('landcover_urban_atlas_3level_39feb2_jmk_1')]
-all_rows_bmo_ds_full = ds_bmo_bug_annotation_train.loc[ds_bmo_bug_annotation_train[bmo_filtering_columns].sum(axis=1) > 0].reset_index(drop=True)
+bmo_cols_to_drop = [col for col in ds_bmo_annotation.columns if col.endswith('brno') or col.find('_brno_') > 0]
+ds_bmo_annotation_train = ds_bmo_annotation.drop(bmo_cols_to_drop, axis=1)
+bmo_filtering_columns = [col for col in ds_bmo_annotation.columns if col.startswith('landcover_urban_atlas_3level_39feb2_jmk_1')]
+all_rows_bmo_ds_full = ds_bmo_annotation_train.loc[ds_bmo_annotation[bmo_filtering_columns].sum(axis=1) > 0].reset_index(drop=True)
 
 joined_df = all_rows_bmo_ds_full
 

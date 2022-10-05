@@ -44,16 +44,17 @@ with parts_with_area as (select *, st_area(geom) as part_area
          from parts_with_rank part left join buildings_with_area bldg on (part.kod = bldg.kod)
      )
 select
-       bug_cell_id,
-       sum(coalesce(pocetbytu, sum_byt, 0) * area_ratio) as pocetbytu,
-       PERCENTILE_CONT(0.5) WITHIN GROUP(ORDER BY coalesce(pocetpodlazi, pocpodbud, 1)) as pocetpodlazi,
-       sum(coalesce(budobyev, 0) * area_ratio) as budobyev,
-       sum(coalesce(budobytsl, 0) * area_ratio) as budobytsl,
-       sum(coalesce(budobyosl, 0) * area_ratio) as budobyosl,
+       ids.sxy_id,
+       sum(coalesce(part.pocetbytu, part.sum_byt, 0) * part.area_ratio) as pocetbytu,
+       PERCENTILE_CONT(0.5) WITHIN GROUP(ORDER BY coalesce(part.pocetpodlazi, part.pocpodbud, 1)) as pocetpodlazi,
+       sum(coalesce(part.budobyev, 0) * area_ratio) as budobyev,
+       sum(coalesce(part.budobytsl, 0) * area_ratio) as budobytsl,
+       sum(coalesce(part.budobyosl, 0) * area_ratio) as budobyosl,
        {dummy_columns}
-from parts_with_ratio
-group by bug_cell_id
-order by bug_cell_id;
+from parts_with_ratio part
+inner join jmk_cell_chronotopes_annotations ids on (part.bug_cell_id = ids.hier_id)
+group by part.bug_cell_id, ids.sxy_id
+order by part.bug_cell_id, ids.sxy_id;
 """
 
 
@@ -81,8 +82,8 @@ def main():
                 continue
             sql_parts.append(
                 f"""
-                   sum(case when {column} = %s then part_area else 0 end) {column}_{value}_area,
-                   sum(case when {column} = %s then area_ratio else 0 end) {column}_{value}_cnt
+                   sum(case when part.{column} = %s then part.part_area else 0 end) {column}_{value}_area,
+                   sum(case when part.{column} = %s then part.area_ratio else 0 end) {column}_{value}_cnt
                 """
             )
             params += (value, value)
