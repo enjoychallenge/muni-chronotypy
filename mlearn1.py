@@ -123,12 +123,12 @@ ds_bmo_bug_annotation = mlearn_util.move_columns_back(
     last_columns
 )
 
-all_rows_brno_ds_full = ds_bmo_bug_annotation.loc[(ds_bmo_bug_annotation['builtup_area_bc23b0_brno'] > 500) & (ds_bmo_bug_annotation['access_city_center_public_transport_8_lvls_5db20f_brno'].notnull())]
+all_rows_brno_ds_full = ds_bmo_bug_annotation.loc[(ds_bmo_bug_annotation['builtup_area_bc23b0_brno'] > 500) & (ds_bmo_bug_annotation['access_city_center_public_transport_8_lvls_5db20f_brno'].notnull())].reset_index(drop=True)
 
 bmo_cols_to_drop = [col for col in ds_bmo_bug_annotation.columns if col.endswith('brno') or col.find('_brno_') > 0]
 ds_bmo_bug_annotation_train = ds_bmo_bug_annotation.drop(bmo_cols_to_drop, axis=1)
 bmo_filtering_columns = [col for col in ds_bmo_bug_annotation.columns if col.startswith('landcover_urban_atlas_3level_39feb2_jmk_1')]
-all_rows_bmo_ds_full = ds_bmo_bug_annotation_train.loc[ds_bmo_bug_annotation_train[bmo_filtering_columns].sum(axis=1) > 0]
+all_rows_bmo_ds_full = ds_bmo_bug_annotation_train.loc[ds_bmo_bug_annotation_train[bmo_filtering_columns].sum(axis=1) > 0].reset_index(drop=True)
 
 joined_df = all_rows_bmo_ds_full
 
