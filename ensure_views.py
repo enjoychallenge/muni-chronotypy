@@ -41,7 +41,7 @@ with parts_with_area as (select *, st_area(geom) as part_area
                         order by kod),
      parts_with_ratio as (
          select part.*, bldg.building_area, part_area/building_area as area_ratio
-         from parts_with_rank part left join buildings_with_area bldg on (part.kod = bldg.kod)
+         from parts_with_rank part inner join buildings_with_area bldg on (part.kod = bldg.kod)
      )
 select
        ids.sxy_id,
