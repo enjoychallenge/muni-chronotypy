@@ -158,4 +158,20 @@ with sql_engine.connect() as con:
         query = sqlalchemy.text(file.read())
         con.execute(query)
 
+ds_check_results = pd.read_sql('''
+select count(*)
+ cnt_rows,
+       count(predikce_brno_2) cnt_p_brno_2,
+       count(predikce_brno_6) cnt_p_brno_6,
+       count(predikce_bmo_2) cnt_p_bmo_2,
+       count(predikce_bmo_6) cnt_p_bmo_6
+from joint_rows_predictions
+;''', con=sql_engine)
+
+assert ds_check_results['cnt_rows'][0] == 3570, f'ds_check_results={ds_check_results}'
+assert ds_check_results['cnt_p_brno_6'][0] == 1360, f'ds_check_results={ds_check_results}'
+assert ds_check_results['cnt_p_brno_2'][0] == 1360, f'ds_check_results={ds_check_results}'
+assert ds_check_results['cnt_p_bmo_6'][0] == 3570, f'ds_check_results={ds_check_results}'
+assert ds_check_results['cnt_p_bmo_2'][0] == 3570, f'ds_check_results={ds_check_results}'
+
 logger.info('****************************************************************************************************')
