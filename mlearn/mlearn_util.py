@@ -14,6 +14,7 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from sklearn.naive_bayes import GaussianNB
 from sklearn.svm import SVC
+from sklearn.ensemble import ExtraTreesClassifier, RandomForestClassifier
 
 from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix
@@ -89,6 +90,8 @@ def models_cross_validation(train_input, train_annotations):
     models.append(('CART', DecisionTreeClassifier(random_state=1)))
     models.append(('NB', GaussianNB()))
     models.append(('SVM', SVC(gamma='auto')))
+    models.append(('ETC', ExtraTreesClassifier()))
+    models.append(('RFC', RandomForestClassifier()))
     # evaluate each model in turn
     kfold = StratifiedKFold(n_splits=5, random_state=1, shuffle=True, )
     for name, model in models:
