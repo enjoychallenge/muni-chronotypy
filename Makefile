@@ -19,7 +19,6 @@ db-import:
 
 db-ensure-views:
 	docker-compose run --rm --no-deps trainer python /app/ensure_views.py
-	docker-compose run -e PGPASSWORD=docker --entrypoint "psql -U docker -p 5432 -h postgresql gis" --rm postgresql psql -f /data/views.sql
 
 db-predictions-export:
 	mkdir -p data/derived
