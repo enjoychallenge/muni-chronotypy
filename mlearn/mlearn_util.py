@@ -83,7 +83,7 @@ def models_cross_validation(train_input, train_annotations):
     # # Spot Check Algorithms
     models = []
     results = []
-    models.append(('LR', LogisticRegression(solver='liblinear', multi_class='ovr')))
+    models.append(('LR', LogisticRegression(solver='liblinear', multi_class='ovr', random_state=1)))
     models.append(('LDA', LinearDiscriminantAnalysis()))
     models.append(('KNN', KNeighborsClassifier()))
     models.append(('CART', DecisionTreeClassifier(random_state=1)))
