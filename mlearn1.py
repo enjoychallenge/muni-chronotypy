@@ -135,8 +135,7 @@ all_rows_brno_ds_full = ds_bmo_annotated.loc[(ds_bmo_annotated['builtup_area_bc2
 
 bmo_cols_to_drop = [col for col in ds_bmo_annotated.columns if col.endswith('brno') or col.find('_brno_') > 0]
 ds_bmo_annotation_train = ds_bmo_annotated.drop(bmo_cols_to_drop, axis=1)
-bmo_filtering_columns = [col for col in ds_bmo_annotated.columns if col.startswith('landcover_urban_atlas_3level_39feb2_jmk_1')]
-all_rows_bmo_ds_full = ds_bmo_annotation_train.loc[ds_bmo_annotated[bmo_filtering_columns].sum(axis=1) > 0].reset_index(drop=True)
+all_rows_bmo_ds_full = ds_bmo_annotation_train.loc[ds_bmo_annotated['pocetpodlazi'] > 0].reset_index(drop=True)
 
 joined_df = all_rows_bmo_ds_full
 
@@ -178,10 +177,10 @@ select count(*)
 from joint_rows_predictions
 ;''', con=sql_engine)
 
-assert ds_check_results['cnt_rows'][0] == 3570, f'ds_check_results={ds_check_results}'
-assert ds_check_results['cnt_p_brno_6'][0] == 1360, f'ds_check_results={ds_check_results}'
-assert ds_check_results['cnt_p_brno_2'][0] == 1360, f'ds_check_results={ds_check_results}'
-assert ds_check_results['cnt_p_bmo_6'][0] == 3570, f'ds_check_results={ds_check_results}'
-assert ds_check_results['cnt_p_bmo_2'][0] == 3570, f'ds_check_results={ds_check_results}'
+assert ds_check_results['cnt_rows'][0] == 8327, f'ds_check_results={ds_check_results}'
+assert ds_check_results['cnt_p_brno_6'][0] == 1868, f'ds_check_results={ds_check_results}'
+assert ds_check_results['cnt_p_brno_2'][0] == 1868, f'ds_check_results={ds_check_results}'
+assert ds_check_results['cnt_p_bmo_6'][0] == 8327, f'ds_check_results={ds_check_results}'
+assert ds_check_results['cnt_p_bmo_2'][0] == 8327, f'ds_check_results={ds_check_results}'
 
 logger.info('****************************************************************************************************')
