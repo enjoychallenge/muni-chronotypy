@@ -72,10 +72,15 @@ def split_dataset(dataset):
     logger.info(f'\n{y[:5]}')
 
     logger.info(f"  Prepare datasets")
-    X_train, X_validation, Y_train, Y_validation = train_test_split(X, y, test_size=0.35, random_state=1, shuffle=True)
+    X_train, X_validation, Y_train, Y_validation = train_test_split(X, y, test_size=0.35, random_state=1, shuffle=True, stratify=y)
 
     logger.info(f'X: train={X_train.shape}, validation={X_validation.shape}')
     logger.info(f'Y: train={Y_train.shape}, validation={Y_validation.shape}')
+
+    train_val, train_cnt = np.unique(Y_train, return_counts=True)
+    val_val, val_cnt = np.unique(Y_validation, return_counts=True)
+    logger.info(f'train_val.grouping={train_val}:{train_cnt}')
+    logger.info(f'val_val.grouping={val_val}:{val_cnt}')
     return X, y, X_train, X_validation, Y_train, Y_validation
 
 
