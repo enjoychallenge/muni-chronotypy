@@ -5,7 +5,7 @@ predikce_brno_6,Brno,cross_validation,KNN,0.40092307692307694,0.0576756899143875
 predikce_brno_6,Brno,cross_validation,CART,0.4572307692307692,0.07116544603990883
 predikce_brno_6,Brno,cross_validation,NB,0.38523076923076927,0.1037320170484829
 predikce_brno_6,Brno,cross_validation,SVM,0.268,0.01907692307692308
-predikce_brno_6,Brno,accuracy,LR,0.5217391304347826,0
+predikce_brno_6,Brno,accuracy,LR,0.5072463768115942,0
 predikce_brno_2,Brno,cross_validation,LR,0.8735384615384616,0.040170052727058675
 predikce_brno_2,Brno,cross_validation,LDA,0.7563076923076923,0.09019426765133004
 predikce_brno_2,Brno,cross_validation,KNN,0.8187692307692307,0.04105588628706689
