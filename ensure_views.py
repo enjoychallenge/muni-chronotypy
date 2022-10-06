@@ -53,8 +53,8 @@ select
        {dummy_columns}
 from parts_with_ratio part
 inner join jmk_cell_chronotopes_annotations ids on (part.bug_cell_id = ids.hier_id)
-group by part.bug_cell_id, ids.sxy_id
-order by part.bug_cell_id, ids.sxy_id;
+group by ids.sxy_id
+order by ids.sxy_id;
 """
 
 
