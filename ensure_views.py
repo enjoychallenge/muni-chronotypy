@@ -50,6 +50,7 @@ select
        sum(coalesce(part.budobyev, 0) * area_ratio) as budobyev,
        sum(coalesce(part.budobytsl, 0) * area_ratio) as budobytsl,
        sum(coalesce(part.budobyosl, 0) * area_ratio) as budobyosl,
+       sum(coalesce(part.part_area, 0)) as builtup_area,
        {dummy_columns}
 from parts_with_ratio part
 inner join jmk_cell_chronotopes_annotations ids on (part.bug_cell_id = ids.hier_id)
