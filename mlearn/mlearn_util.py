@@ -95,8 +95,8 @@ def models_cross_validation(train_input, train_annotations):
     models.append(('CART', DecisionTreeClassifier(random_state=1)))
     models.append(('NB', GaussianNB()))
     models.append(('SVM', SVC(gamma='auto')))
-    models.append(('ETC', ExtraTreesClassifier()))
-    models.append(('RFC', RandomForestClassifier()))
+    models.append(('ETC', ExtraTreesClassifier(random_state=1)))
+    models.append(('RFC', RandomForestClassifier(random_state=1)))
     # evaluate each model in turn
     kfold = StratifiedKFold(n_splits=5, random_state=1, shuffle=True, )
     for name, model in models:
