@@ -11,10 +11,13 @@ from sklearn.model_selection import StratifiedKFold
 from sklearn.linear_model import LogisticRegression
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis, QuadraticDiscriminantAnalysis
 from sklearn.naive_bayes import GaussianNB
 from sklearn.svm import SVC
-from sklearn.ensemble import ExtraTreesClassifier, RandomForestClassifier
+from sklearn.ensemble import ExtraTreesClassifier, RandomForestClassifier, AdaBoostClassifier
+from sklearn.neural_network import MLPClassifier
+from sklearn.gaussian_process import GaussianProcessClassifier
+from sklearn.gaussian_process.kernels import RBF
 
 from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix
@@ -89,6 +92,8 @@ def models_cross_validation(train_input, train_annotations):
     # # Spot Check Algorithms
     models = []
     results = []
+    # https://pythonguides.com/scikit-learn-classification/
+    # https://scikit-learn.org/stable/auto_examples/classification/plot_classifier_comparison.html
     models.append(('LR', LogisticRegression(solver='liblinear', multi_class='ovr', random_state=1)))
     models.append(('LDA', LinearDiscriminantAnalysis()))
     models.append(('KNN', KNeighborsClassifier()))
@@ -97,6 +102,13 @@ def models_cross_validation(train_input, train_annotations):
     models.append(('SVM', SVC(gamma='auto')))
     models.append(('ETC', ExtraTreesClassifier(random_state=1)))
     models.append(('RFC', RandomForestClassifier(random_state=1)))
+    models.append(('SVC_lin', SVC(kernel="linear", C=0.025),))
+    models.append(('GPC', GaussianProcessClassifier(1.0 * RBF(1.0))))
+    models.append(('DTC', DecisionTreeClassifier(max_depth=5)))
+    models.append(('MLPC', MLPClassifier(alpha=1, max_iter=1000)))
+    models.append(('ABC', AdaBoostClassifier()))
+    models.append(('QDA', QuadraticDiscriminantAnalysis()))
+
     # evaluate each model in turn
     kfold = StratifiedKFold(n_splits=5, random_state=1, shuffle=True, )
     for name, model in models:
