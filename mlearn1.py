@@ -131,11 +131,12 @@ ds_bmo_annotated = mlearn_util.move_columns_back(
     last_columns
 )
 
-all_rows_brno_ds_full = ds_bmo_annotated.loc[(ds_bmo_annotated['builtup_area_bc23b0_brno'] > 500) & (ds_bmo_annotated['access_city_center_public_transport_8_lvls_5db20f_brno'].notnull())].reset_index(drop=True)
+ds_bmo_annotated = ds_bmo_annotated.loc[ds_bmo_annotated['builtup_area'] > 500].reset_index(drop=True)
+all_rows_brno_ds_full = ds_bmo_annotated.loc[ds_bmo_annotated['access_city_center_public_transport_8_lvls_5db20f_brno'].notnull()].reset_index(drop=True)
 
 bmo_cols_to_drop = [col for col in ds_bmo_annotated.columns if col.endswith('brno') or col.find('_brno_') > 0]
 ds_bmo_annotation_train = ds_bmo_annotated.drop(bmo_cols_to_drop, axis=1)
-all_rows_bmo_ds_full = ds_bmo_annotation_train.loc[ds_bmo_annotated['pocetpodlazi'] > 0].reset_index(drop=True)
+all_rows_bmo_ds_full = ds_bmo_annotation_train.loc[ds_bmo_annotated['number_of_accidents_in_the_daytime_40a49b_bmo'].notnull()].reset_index(drop=True)
 
 joined_df = all_rows_bmo_ds_full
 
@@ -177,10 +178,10 @@ select count(*)
 from joint_rows_predictions
 ;''', con=sql_engine)
 
-assert ds_check_results['cnt_rows'][0] == 8327, f'ds_check_results={ds_check_results}'
-assert ds_check_results['cnt_p_brno_6'][0] == 1868, f'ds_check_results={ds_check_results}'
-assert ds_check_results['cnt_p_brno_2'][0] == 1868, f'ds_check_results={ds_check_results}'
-assert ds_check_results['cnt_p_bmo_6'][0] == 8327, f'ds_check_results={ds_check_results}'
-assert ds_check_results['cnt_p_bmo_2'][0] == 8327, f'ds_check_results={ds_check_results}'
+assert ds_check_results['cnt_rows'][0] == 5771, f'ds_check_results={ds_check_results}'
+assert ds_check_results['cnt_p_brno_6'][0] == 1766, f'ds_check_results={ds_check_results}'
+assert ds_check_results['cnt_p_brno_2'][0] == 1766, f'ds_check_results={ds_check_results}'
+assert ds_check_results['cnt_p_bmo_6'][0] == 5771, f'ds_check_results={ds_check_results}'
+assert ds_check_results['cnt_p_bmo_2'][0] == 5771, f'ds_check_results={ds_check_results}'
 
 logger.info('****************************************************************************************************')
