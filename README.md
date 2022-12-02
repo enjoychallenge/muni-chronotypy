@@ -3,6 +3,12 @@
 ## Download data
 Either configure [Google Drive **Shared Drive** (Team Drive)](https://rclone.org/drive/) using `rclone config` and run `make download-data`, or download [`raw` folder](https://drive.google.com/drive/folders/1ly6ypgG6LG3fiLFmBDLnCrJNb_XK40ay) into `data/raw` manually.
 
+## Input data
+- RUIAN attributes: `data/raw/stavebni_objekty_jmk_atributy_3035.gpkg`
+- BUG attributes: `data/raw/cell_values_bmo.csv`
+- Chronotope annotations: `raw/trenink.zip/trenink.shp`
+  - 6 chronotope types A, B, C, D, E, F
+
 ## Import data
 ```bash
 # start database
@@ -38,6 +44,24 @@ The script computes cross validation of 14 models, chooses the best (the one wit
 - for Brno cells and 6 chronotope types A, B, C, D, E, F
 - for BMO cells and 2 chronotope types ABC, DEF
 - for Brno cells and 2 chronotope types ABC, DEF
+
+Model precisions are located in `mlearn/precision.csv` file. Example:
+```csv
+Prediction_type,Area,Result_type,Model_name,Precision,Standard_deviation
+predikce_brno_6,Brno,cross_validation,LR,0.48830769230769233,0.08186928533740116
+predikce_brno_6,Brno,cross_validation,LDA,0.42615384615384616,0.08748423357531547
+predikce_brno_6,Brno,cross_validation,KNN,0.48830769230769233,0.040977407543597535
+...
+predikce_bmo_2,BMO,cross_validation,ABC,0.883107088989442,0.04446275406631577
+predikce_bmo_2,BMO,cross_validation,QDA,0.6574660633484164,0.07950649591709888
+predikce_bmo_2,BMO,accuracy,RFC,0.9136690647482014,0
+```
+
+Export predictions for all cells:
+```bash
+make db-predictions-export
+```
+Predictions are located in `data/derived/predikce.shp` files.
 
 ## Upload data
 Either run `make upload-data`, or upload contents of `data/derived`  into [`derived` folder](https://drive.google.com/drive/folders/1veKmByAmkgi-ZcmspxQD3CTmuLUUYCaC) manually.
