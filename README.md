@@ -1,13 +1,12 @@
 # Chronotopes
 
 ## Download data
-Either configure [Google Drive **Shared Drive** (Team Drive)](https://rclone.org/drive/) using `rclone config` and run `make download-data`, or download [`raw` folder](https://drive.google.com/drive/folders/1ly6ypgG6LG3fiLFmBDLnCrJNb_XK40ay) into `data/raw` manually.
+Either configure [Google Drive **Shared Drive** (Team Drive)](https://rclone.org/drive/) using `rclone config` and run `make download-data`, or download [`raw` folder](https://drive.google.com/drive/folders/1ly6ypgG6LG3fiLFmBDLnCrJNb_XK40ay) into `data/raw` manually. You have to copy training data `grocery_stores_2023-05-25.csv` into `data/raw/` manually.
 
 ## Input data
 - RUIAN attributes: `data/raw/stavebni_objekty_jmk_atributy_3035.gpkg`
 - BUG attributes: `data/raw/cell_values_bmo.csv`
-- Chronotope annotations: `raw/trenink.zip/trenink.shp`
-  - 6 chronotope types A, B, C, D, E, F
+- Grocery stores data: `data/raw/grocery_stores_2023-05-25.csv`
 
 ## Import data
 ```bash
