@@ -1,6 +1,9 @@
 import logging
+import numpy as np
+
 import settings
-import psycopg2
+import psycopg2.extras
+import pandas as pd
 
 
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s [%(filename)s] [%(levelname)s]:\t%(message)s')
@@ -195,3 +198,78 @@ sql_cnt = 'select count(*) from cell_values'
 cursor.execute(sql_cnt)
 cnt = cursor.fetchone()
 logger.info(f'  Rows imported into DB: {cnt[0]}')
+
+logger.info('****************************************************************************************************')
+logger.info('Import Grocery stores data')
+
+sql_drop = '''DROP TABLE IF EXISTS grocery_stores;'''
+cursor.execute(sql_drop)
+
+cursor.execute(f'''
+CREATE TABLE grocery_stores(
+  cid varchar(50),
+  category_name varchar(50),
+  lat char(10),
+  lon char(10),
+  day char(2),
+  hour integer,
+  hour_idx integer,
+  popularity integer
+);
+''')
+
+DAYS = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su']
+
+
+def is_popularity_filled(row):
+    for day in DAYS:
+        first_hour_column = f'popularTimesHistogram/{day}/0/hour'
+        first_hour_raw = row[first_hour_column]
+        if not np.isnan(first_hour_raw):
+            return True
+    return False
+
+
+df_stores_raw = pd.read_csv('/data/raw/grocery_stores_2023-05-25.csv')
+logger.info(f'df_stores_raw.shape={df_stores_raw.shape}')
+for index, row in df_stores_raw.iterrows():
+    if not is_popularity_filled(row):
+        continue
+    for day in DAYS:
+        hours = {hour: 0 for hour in range(0, 24)}
+        for column_idx in range(0, 24):
+            hour_column = f'popularTimesHistogram/{day}/{column_idx}/hour'
+            popularity_column = f'popularTimesHistogram/{day}/{column_idx}/occupancyPercent'
+            hour = row[hour_column]
+            popularity = row[popularity_column]
+            assert np.isnan(hour) == np.isnan(popularity)
+            if np.isnan(hour):
+                continue
+            hours[hour] = round(popularity)
+
+        values = [
+            (
+                row["cid"],
+                row["categoryName"],
+                row["location/lat"],
+                row["location/lng"],
+                day,
+                hour,
+                (hour + 20) % 24,
+                popularity,
+            )
+            for hour, popularity in hours.items()
+        ]
+        query = """
+        insert into grocery_stores(
+          cid,
+          category_name,
+          lat,
+          lon,
+          day,
+          hour,
+          hour_idx,
+          popularity
+        ) values %s;
+        """
+        psycopg2.extras.execute_values(cursor, query, values)
