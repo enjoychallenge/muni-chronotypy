@@ -8,20 +8,20 @@ from sklearn.model_selection import train_test_split
 from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import StratifiedKFold
 
-from sklearn.linear_model import LogisticRegression
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.neighbors import KNeighborsClassifier
+from sklearn.linear_model import LogisticRegression, SGDRegressor
+from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
+from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis, QuadraticDiscriminantAnalysis
 from sklearn.naive_bayes import GaussianNB
-from sklearn.svm import SVC
+from sklearn.svm import SVC, SVR
 from sklearn.ensemble import ExtraTreesClassifier, RandomForestClassifier, AdaBoostClassifier
-from sklearn.neural_network import MLPClassifier
-from sklearn.gaussian_process import GaussianProcessClassifier
+from sklearn.neural_network import MLPClassifier, MLPRegressor
+from sklearn.kernel_ridge import KernelRidge
+from sklearn.gaussian_process import GaussianProcessClassifier, GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import RBF
+from sklearn.cross_decomposition import PLSRegression
 
-from sklearn.metrics import classification_report
-from sklearn.metrics import confusion_matrix
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import r2_score, mean_absolute_error, max_error, SCORERS
 
 
 from . import precision_output
@@ -75,7 +75,7 @@ def split_dataset(dataset):
     logger.info(f'\n{y[:5]}')
 
     logger.info(f"  Prepare datasets")
-    X_train, X_validation, Y_train, Y_validation = train_test_split(X, y, test_size=0.35, random_state=1, shuffle=True, stratify=y)
+    X_train, X_validation, Y_train, Y_validation = train_test_split(X, y, test_size=0.35, random_state=1, shuffle=True,)
 
     logger.info(f'X: train={X_train.shape}, validation={X_validation.shape}')
     logger.info(f'Y: train={Y_train.shape}, validation={Y_validation.shape}')
@@ -95,19 +95,39 @@ def models_cross_validation(train_input, train_annotations):
     # https://pythonguides.com/scikit-learn-classification/
     # https://scikit-learn.org/stable/auto_examples/classification/plot_classifier_comparison.html
     models.append(('LR', LogisticRegression(solver='liblinear', multi_class='ovr', random_state=1)))
-    models.append(('LDA', LinearDiscriminantAnalysis()))
-    models.append(('KNN', KNeighborsClassifier()))
+    models.append(('SGDR', SGDRegressor(random_state=1)))
+
     models.append(('CART', DecisionTreeClassifier(random_state=1)))
+    models.append(('DTC', DecisionTreeClassifier(max_depth=5, random_state=1)))
+    models.append(('DTR', DecisionTreeRegressor(random_state=1)))
+
+    models.append(('KNN', KNeighborsClassifier()))
+    models.append(('KNR', KNeighborsRegressor()))
+
+    models.append(('LDA', LinearDiscriminantAnalysis()))
+    models.append(('QDA', QuadraticDiscriminantAnalysis()))
+
     models.append(('NB', GaussianNB()))
-    models.append(('SVM', SVC(gamma='auto')))
+
+    models.append(('SVM', SVC(gamma='auto', random_state=1)))
+    # models.append(('SVC_lin', SVC(kernel="linear", C=0.025),))
+    # models.append(('SVRl', SVR(kernel='linear')))
+    models.append(('SVRrbf', SVR(kernel='rbf')))
+    models.append(('SVRp', SVR(kernel='poly')))
+
     models.append(('ETC', ExtraTreesClassifier(random_state=1)))
     models.append(('RFC', RandomForestClassifier(random_state=1)))
-    models.append(('SVC_lin', SVC(kernel="linear", C=0.025),))
-    models.append(('GPC', GaussianProcessClassifier(1.0 * RBF(1.0))))
-    models.append(('DTC', DecisionTreeClassifier(max_depth=5)))
-    models.append(('MLPC', MLPClassifier(alpha=1, max_iter=1000)))
-    models.append(('ABC', AdaBoostClassifier()))
-    models.append(('QDA', QuadraticDiscriminantAnalysis()))
+    models.append(('ABC', AdaBoostClassifier(random_state=1)))
+
+    models.append(('MLPC', MLPClassifier(alpha=1, max_iter=1000, random_state=1)))
+    models.append(('MLPR', MLPRegressor(alpha=1, max_iter=1000, random_state=1)))
+
+    models.append(('KR', KernelRidge()))
+
+    # models.append(('GPC', GaussianProcessClassifier(1.0 * RBF(1.0))))
+    models.append(('GPR', GaussianProcessRegressor(random_state=1)))
+
+    models.append(('PLSR', PLSRegression()))
 
     # evaluate each model in turn
     kfold = StratifiedKFold(n_splits=5, random_state=1, shuffle=True, )
@@ -115,33 +135,36 @@ def models_cross_validation(train_input, train_annotations):
         # See https://stackoverflow.com/a/42266274
         # or https://scikit-learn.org/stable/modules/cross_validation.html#cross-validation
         logger.info(f'Starting cross validation using model {name}')
-        cv_results = cross_val_score(model, train_input, train_annotations, cv=kfold, scoring='accuracy')
+        # logger.info(f'sorted(sklearn.metrics.SCORERS.keys())={sorted(SCORERS.keys())}')
+        cv_results = cross_val_score(model, train_input, train_annotations, cv=kfold, scoring='r2')
         logger.info('%s: %f (%f)' % (name, cv_results.mean(), cv_results.std()))
         results.append((name, model, cv_results.mean(), cv_results.std()))
 
+    logger.info('models_cross_validation DONE')
     return results
 
 
 def evaluate_model(model, input_attributes, annotations):
     validation_predictions = model.predict(input_attributes)
 
-    logger.info(f'accuracy_score={accuracy_score(annotations, validation_predictions)}')
-    logger.info(f'confusion_matrix=\n{confusion_matrix(annotations, validation_predictions)}')
-    logger.info(f'classification_report=\n{classification_report(annotations, validation_predictions)}')
-    return accuracy_score(annotations, validation_predictions)
+    logger.info(f'r2_score={r2_score(annotations, validation_predictions)}')
+    logger.info(f'mean_absolute_error=\n{mean_absolute_error(annotations, validation_predictions)}')
+    logger.info(f'max_error =\n{max_error(annotations, validation_predictions)}')
+    return r2_score(annotations, validation_predictions)
+
 
 def fit_and_evaluate_model(model, X_train, Y_train, X_validation, Y_validation, X, y):
     model.fit(X_train, Y_train)
 
     logger.info('****************************************************************************************************')
     logger.info(f'Results for validation set')
-    validation_accuracy_score = evaluate_model(model, X_validation, Y_validation)
+    validation_r2_score = evaluate_model(model, X_validation, Y_validation)
 
     logger.info('****************************************************************************************************')
     logger.info(f'Results for whole dataset')
     evaluate_model(model, X, y)
 
-    return model, validation_accuracy_score
+    return model, validation_r2_score
 
 
 def get_model_and_predictions_from_dataset(dataset, ):
@@ -155,14 +178,14 @@ def get_model_and_predictions_from_dataset(dataset, ):
     best_model = max(cross_val_results, key=lambda p: p[2])
     logger.info(f'Best model: {best_model[0]}')
     model = best_model[1]
-    model, validation_accuracy_score = fit_and_evaluate_model(model, X_train, Y_train, X_validation, Y_validation, X, y)
+    model, validation_r2_score = fit_and_evaluate_model(model, X_train, Y_train, X_validation, Y_validation, X, y)
 
     logger.info('****************************************************************************************************')
     all_rows = dataset.values[:, 1:-1]
     logger.info(f'Describe each attribute\n{dataset.describe()}')
 
     all_predictions = model.predict(all_rows)
-    return best_model + (validation_accuracy_score,), all_predictions, cross_val_results
+    return best_model + (validation_r2_score,), all_predictions, cross_val_results
 
 
 def make_predictions(input_ds, output_ds, *, pred_column_name, area, columns_to_drop=None):
