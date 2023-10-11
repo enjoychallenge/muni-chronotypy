@@ -25,10 +25,18 @@ conn = psycopg2.connect(settings.PG_CONN)
 conn.autocommit = True
 cursor = conn.cursor()
 
+sql_drop = '''
+DROP MATERIALIZED VIEW IF EXISTS grocery_stores_geom CASCADE;
+DROP MATERIALIZED VIEW IF EXISTS cell_values_geom CASCADE;
+'''
+cursor.execute(sql_drop)
+
 logger.info('\nStarting with cell_values table')
 
-sql_drop = '''DROP TABLE IF EXISTS cell_values;'''
+sql_drop = '''
+DROP TABLE IF EXISTS cell_values;'''
 cursor.execute(sql_drop)
+
 sql_create = '''CREATE TABLE cell_values(sxy_id char(15), 
 resident_population_91c66b_brno float,
 access_city_center_public_transport_8_lvls_5db20f_brno float,
@@ -235,7 +243,7 @@ logger.info(f'df_stores_raw.shape={df_stores_raw.shape}')
 for index, row in df_stores_raw.iterrows():
     if not is_popularity_filled(row):
         continue
-    for day in DAYS:
+    for day_idx, day in enumerate(DAYS):
         hours = {hour: 0 for hour in range(0, 24)}
         for column_idx in range(0, 24):
             hour_column = f'popularTimesHistogram/{day}/{column_idx}/hour'
@@ -253,7 +261,7 @@ for index, row in df_stores_raw.iterrows():
                 row["categoryName"],
                 row["location/lat"],
                 row["location/lng"],
-                day,
+                day_idx,
                 hour,
                 (hour + 20) % 24,
                 popularity,
@@ -273,3 +281,25 @@ for index, row in df_stores_raw.iterrows():
         ) values %s;
         """
         psycopg2.extras.execute_values(cursor, query, values)
+
+cursor.execute(f'''
+create MATERIALIZED view grocery_stores_geom
+AS
+select gs.*,
+       st_transform(st_setSRID(ST_Point(gs.lon::float, gs.lat::float), 4326), 3035) geom
+from grocery_stores gs
+;''')
+
+cursor.execute(f'''
+create MATERIALIZED view cell_values_geom
+AS
+select cv.*,
+       ST_MakeEnvelope(
+               cast(split_part(cv.sxy_id, '-', 1) as int) * cast(split_part(cv.sxy_id, '-', 2) as int),
+               cast(split_part(cv.sxy_id, '-', 1) as int) * cast(split_part(cv.sxy_id, '-', 3) as int),
+               cast(split_part(cv.sxy_id, '-', 1) as int) * (cast(split_part(cv.sxy_id, '-', 2) as int) + 1),
+               cast(split_part(cv.sxy_id, '-', 1) as int) * (cast(split_part(cv.sxy_id, '-', 3) as int) + 1),
+               3035
+       ) geom
+from cell_values cv
+;''')
