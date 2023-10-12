@@ -27,7 +27,7 @@ precision_output.prepare_csv_output()
 
 # Load dataset
 logger.info(f"  Reading from DB")
-ds_input_raw = pd.read_sql('''
+grocery_fit_data_raw = pd.read_sql('''
 select
 -- resident_population_91c66b_brno,
 -- cv.access_city_center_public_transport_8_lvls_5db20f_brno,
@@ -105,6 +105,7 @@ cv.us_res_pop_high_edu_lvl_no_education_622c58_jmk,
 -- us_res_pop_high_edu_lvl_primary_89a90c_jmk,
 -- us_res_pop_high_edu_lvl_secondary_not_graduated_df1937_jmk,
 -- us_res_pop_high_edu_lvl_tertiary_university_d9de47_jmk,
+gs.cid,
 gs.category_name,
 gs.day,
 gs.hour,
@@ -113,41 +114,63 @@ from grocery_stores_geom gs inner join
      cell_values_geom cv on (gs.sxy_id = cv.sxy_id)
 ;''', con=sql_engine)
 
-last_columns = ['popularity']
+# ds_garmin_fit_data_columns = list(ds_garmin_fit_data.columns)
+# ds_garmin_fit_data[ds_garmin_fit_data_columns] = ds_garmin_fit_data[ds_garmin_fit_data_columns].fillna(0)
 
-ds_input = mlearn_util.move_columns_back(
-    mlearn_util.split_category_columns(ds_input_raw, ['category_name']),
+training_column = 'popularity'
+
+last_columns = [training_column]
+
+grocery_fit_data = mlearn_util.move_columns_back(
+    mlearn_util.split_category_columns(grocery_fit_data_raw, ['category_name']),
     last_columns
 )
 
-joined_df = ds_input
-
 logger.info('****************************************************************************************************')
-logger.info('BMO')
+logger.info('Learning')
 logger.info('****************************************************************************************************')
-logger.info(f"shape={ds_input.shape}")
+logger.info(f"shape={grocery_fit_data.shape}")
 
-joined_df = mlearn_util.make_predictions(input_ds=ds_input, output_ds=joined_df, pred_column_name='popularity', area='BMO')
+joined_df = mlearn_util.make_predictions(input_ds=grocery_fit_data,
+                                         output_ds=grocery_fit_data,
+                                         pred_column_name=f'pred_{training_column}',
+                                         columns_to_drop=[],
+                                         id_columns=['cid']
+                                         )
 
 with sql_engine.connect() as con:
-    con.execute("DROP TABLE IF EXISTS joint_rows_predictions CASCADE;")
+    con.execute("DROP TABLE IF EXISTS all_with_predictions CASCADE;")
 
-joined_df.to_sql("joint_rows_predictions", sql_engine)
+joined_df.to_sql("all_with_predictions", sql_engine)
 
-with sql_engine.connect() as con:
-    with open("data/predictions-views.sql") as file:
-        query = sqlalchemy.text(file.read())
-        con.execute(query)
+# with sql_engine.connect() as con:
+#     query = f'''
+# DROP table IF EXISTS all_predictions_geom;
+# create table all_predictions_geom
+# AS
+# select fda.file_id,
+#        awp.id,
+#        ST_SetSRID(ST_MakePoint(cast(substring(fda.geometry, 3)  as float), cast(substring(fda.geometry_2, 0, length(fda.geometry_2)) as float)),5514) geometry,
+#        ST_SetSRID(ST_MakePoint(cast(substring(fda.snap_geometry, 3)  as float), cast(substring(fda.snap_geometry_2, 0, length(fda.snap_geometry_2)) as float)),5514) snap_geometry,
+#        awp.heart_rate_avg_perc,
+#        awp.pred_heart_rate_avg_perc
+# from all_with_predictions awp inner join
+#      fit_data_all fda on fda.id = awp.id and fda.file_id = awp.file_id
+# order by id asc
+# ;'''
+#     con.execute(query)
 
-ds_check_results = pd.read_sql('''
-select count(*)
-       cnt_rows,
-       count(popularity) cnt_popularity
-from joint_rows_predictions
-;''', con=sql_engine)
+# ds_check_results = pd.read_sql('''
+# select count(*)
+#  cnt_rows,
+#        count(heart_rate_avg_perc) cnt_heart_rate_avg_perc,
+#        count(pred_heart_rate_avg_perc) cnt_pred_heart_rate_avg_perc
+# from all_with_predictions
+# ;''', con=sql_engine)
 
-assert ds_check_results['cnt_rows'][0] == 5771, f'ds_check_results={ds_check_results}'
-assert ds_check_results['cnt_p_bmo_6'][0] == 5771, f'ds_check_results={ds_check_results}'
-assert ds_check_results['cnt_p_bmo_2'][0] == 5771, f'ds_check_results={ds_check_results}'
+# assert ds_check_results['cnt_rows'][0] == 12888, f'ds_check_results={ds_check_results}'
+# assert ds_check_results['cnt_heart_rate_avg_perc'][0] == 12888, f'ds_check_results={ds_check_results}'
+# assert ds_check_results['cnt_pred_heart_rate_avg_perc'][0] == 12888, f'ds_check_results={ds_check_results}'
 
+precision_output.output_stats()
 logger.info('****************************************************************************************************')

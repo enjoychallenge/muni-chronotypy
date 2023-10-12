@@ -188,16 +188,18 @@ def get_model_and_predictions_from_dataset(dataset, ):
     return best_model + (validation_r2_score,), all_predictions, cross_val_results
 
 
-def make_predictions(input_ds, output_ds, *, pred_column_name, area, columns_to_drop=None):
-    if columns_to_drop:
-        training_ds = input_ds.drop(columns_to_drop, axis=1)
+def make_predictions(input_ds, output_ds, *, pred_column_name, columns_to_drop=None, id_columns=None):
+    id_columns = id_columns or ['id']
+    columns_to_drop = columns_to_drop or []
+    input_ds = input_ds.drop(columns_to_drop, axis=1)
+    training_ds = input_ds.drop(id_columns, axis=1)
     model_tuple, all_predictions, cross_val_results = get_model_and_predictions_from_dataset(training_ds, )
 
     df_predictions = pd.DataFrame({pred_column_name: all_predictions})
-    df_predictions_id = pd.concat([training_ds.loc[:, ['sxy_id']], df_predictions], axis=1, sort=False)
+    df_predictions_id = pd.concat([input_ds.loc[:, id_columns], df_predictions], axis=1, sort=False)
 
-    precision_output.output_precision(pred_column_name, area, cross_val_results, model_tuple)
-    return output_ds.join(df_predictions_id.set_index('sxy_id'), on='sxy_id', how='left')
+    precision_output.output_precision(pred_column_name, cross_val_results, model_tuple)
+    return output_ds.merge(df_predictions_id.set_index(id_columns), left_on=id_columns, right_on=id_columns, how='inner')
 
 
 def split_category_columns(data_frame, category_columns):
