@@ -219,10 +219,10 @@ CREATE TABLE grocery_stores(
   category_name varchar(50),
   lat char(10),
   lon char(10),
-  day char(2),
-  hour integer,
-  hour_idx integer,
-  popularity integer
+  day smallint,
+  hour smallint,
+  hour_idx smallint,
+  popularity smallint
 );
 ''')
 
@@ -283,14 +283,6 @@ for index, row in df_stores_raw.iterrows():
         psycopg2.extras.execute_values(cursor, query, values)
 
 cursor.execute(f'''
-create MATERIALIZED view grocery_stores_geom
-AS
-select gs.*,
-       st_transform(st_setSRID(ST_Point(gs.lon::float, gs.lat::float), 4326), 3035) geom
-from grocery_stores gs
-;''')
-
-cursor.execute(f'''
 create MATERIALIZED view cell_values_geom
 AS
 select cv.*,
@@ -302,4 +294,28 @@ select cv.*,
                3035
        ) geom
 from cell_values cv
+;''')
+
+cursor.execute(f'''
+create MATERIALIZED view grocery_stores_geom
+AS
+with lat_lon as MATERIALIZED (
+    select gs.lat, gs.lon
+    from grocery_stores gs
+    group by gs.lat, gs.lon
+), lat_lon_geom as MATERIALIZED (
+    select ll.*,
+           st_transform(st_setSRID(ST_Point(ll.lon::float, ll.lat::float), 4326), 3035) geom
+    from lat_lon ll
+), lat_lon_geom_cell as MATERIALIZED (
+    select llg.*, cv.sxy_id
+    from lat_lon_geom llg
+             inner join
+         cell_values_geom cv on ST_Contains(cv.geom, llg.geom)
+)
+select gs.*,
+       llgc.sxy_id
+from grocery_stores gs
+    inner join
+          lat_lon_geom_cell llgc on (llgc.lat = gs.lat and llgc.lon = gs.lon)
 ;''')
