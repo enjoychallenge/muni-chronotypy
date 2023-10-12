@@ -105,6 +105,7 @@ cv.us_res_pop_high_edu_lvl_no_education_622c58_jmk,
 -- us_res_pop_high_edu_lvl_primary_89a90c_jmk,
 -- us_res_pop_high_edu_lvl_secondary_not_graduated_df1937_jmk,
 -- us_res_pop_high_edu_lvl_tertiary_university_d9de47_jmk,
+gs.rowid,
 gs.cid,
 gs.category_name,
 gs.day,
@@ -136,7 +137,7 @@ joined_df = mlearn_util.make_predictions(input_ds=grocery_fit_data,
                                          output_ds=grocery_fit_data,
                                          pred_column_name=f'pred_{training_column}',
                                          columns_to_drop=[],
-                                         id_columns=['cid']
+                                         id_columns=['rowid', 'cid'],
                                          )
 
 with sql_engine.connect() as con:

@@ -313,7 +313,8 @@ with lat_lon as MATERIALIZED (
              inner join
          cell_values_geom cv on ST_Contains(cv.geom, llg.geom)
 )
-select gs.*,
+select ROW_NUMBER() OVER (ORDER BY (SELECT 1)) AS rowid,
+       gs.*,
        llgc.sxy_id
 from grocery_stores gs
     inner join
