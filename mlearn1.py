@@ -112,6 +112,7 @@ gs.hour,
 gs.popularity
 from grocery_stores_geom gs inner join
      cell_values_geom cv on (gs.sxy_id = cv.sxy_id)
+where gs.popularity > 0
 ;''', con=sql_engine)
 
 # ds_garmin_fit_data_columns = list(ds_garmin_fit_data.columns)
