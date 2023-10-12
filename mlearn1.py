@@ -110,7 +110,7 @@ gs.day,
 gs.hour,
 gs.popularity
 from grocery_stores_geom gs inner join
-     cell_values_geom cv on ST_Contains(cv.geom, gs.geom)
+     cell_values_geom cv on (gs.sxy_id = cv.sxy_id)
 ;''', con=sql_engine)
 
 last_columns = ['popularity']
