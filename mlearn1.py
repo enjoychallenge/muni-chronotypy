@@ -122,7 +122,7 @@ training_column = 'popularity'
 last_columns = [training_column]
 
 grocery_fit_data = mlearn_util.move_columns_back(
-    mlearn_util.split_category_columns(grocery_fit_data_raw, ['category_name']),
+    mlearn_util.split_category_columns(grocery_fit_data_raw, ['category_name', 'day']),
     last_columns
 )
 
