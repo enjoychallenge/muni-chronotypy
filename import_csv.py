@@ -315,7 +315,8 @@ with lat_lon as MATERIALIZED (
 )
 select ROW_NUMBER() OVER (ORDER BY (SELECT 1)) AS rowid,
        gs.*,
-       llgc.sxy_id
+       llgc.sxy_id,
+       llgc.geom
 from grocery_stores gs
     inner join
           lat_lon_geom_cell llgc on (llgc.lat = gs.lat and llgc.lon = gs.lon)
