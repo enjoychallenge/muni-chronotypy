@@ -145,22 +145,38 @@ with sql_engine.connect() as con:
 
 joined_df.to_sql("all_with_predictions", sql_engine)
 
-# with sql_engine.connect() as con:
-#     query = f'''
-# DROP table IF EXISTS all_predictions_geom;
-# create table all_predictions_geom
-# AS
-# select fda.file_id,
-#        awp.id,
-#        ST_SetSRID(ST_MakePoint(cast(substring(fda.geometry, 3)  as float), cast(substring(fda.geometry_2, 0, length(fda.geometry_2)) as float)),5514) geometry,
-#        ST_SetSRID(ST_MakePoint(cast(substring(fda.snap_geometry, 3)  as float), cast(substring(fda.snap_geometry_2, 0, length(fda.snap_geometry_2)) as float)),5514) snap_geometry,
-#        awp.heart_rate_avg_perc,
-#        awp.pred_heart_rate_avg_perc
-# from all_with_predictions awp inner join
-#      fit_data_all fda on fda.id = awp.id and fda.file_id = awp.file_id
-# order by id asc
-# ;'''
-#     con.execute(query)
+with sql_engine.connect() as con:
+    query = f'''
+DROP table IF EXISTS all_predictions_geom;
+create table all_predictions_geom
+AS
+with tmp_pred as (
+    select gs.cid,
+           gs.day,
+           gs.hour_idx,
+           gs.category_name,
+           p.popularity as pplr,
+           p.pred_popularity as pred_pplr,
+           abs(p.pred_popularity - p.popularity) as pred_err,
+           gs.geom
+    from all_with_predictions p
+        inner join grocery_stores_geom gs on gs.rowid = p.rowid
+    order by cid, day, hour_idx
+)
+select
+    cid,
+    category_name,
+    count(*) records,
+    count(case when pred_err = 0 then null else pred_err end) cnt_errors,
+    ROUND(sum(pred_err) * 1000 / count(*)) / 1000 avg_err,
+    min(pred_err) min_err,
+    max(pred_err) max_err,
+    geom
+from tmp_pred
+group by cid, category_name, geom
+order by avg_err
+'''
+    con.execute(query)
 
 # ds_check_results = pd.read_sql('''
 # select count(*)
