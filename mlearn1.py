@@ -140,10 +140,15 @@ joined_df = mlearn_util.make_predictions(input_ds=grocery_fit_data,
                                          id_columns=['rowid', 'cid'],
                                          )
 
+logger.info('****************************************************************************************************')
+logger.info('Creating output all_with_predictions')
+
 with sql_engine.connect() as con:
     con.execute("DROP TABLE IF EXISTS all_with_predictions CASCADE;")
 
 joined_df.to_sql("all_with_predictions", sql_engine)
+
+logger.info('Creating output all_predictions_geom')
 
 with sql_engine.connect() as con:
     query = f'''
@@ -175,6 +180,104 @@ select
 from tmp_pred
 group by cid, category_name, geom
 order by avg_err
+'''
+    con.execute(query)
+
+logger.info('Creating output all_predictions_csv')
+
+with sql_engine.connect() as con:
+    query = f'''
+DROP table IF EXISTS all_predictions_csv;
+create table all_predictions_csv
+AS
+with tmp_pred as (
+select gs.cid,
+       gs.day,
+       gs.hour_idx,
+       gs.category_name,
+       p.popularity as pplr,
+       p.pred_popularity as pred_pplr,
+       abs(p.pred_popularity - p.popularity) as pred_err,
+       gs.geom
+from all_with_predictions p inner join
+    grocery_stores_geom gs on gs.rowid = p.rowid
+)
+select gs.cid,
+       gs.day,
+       gs.category_name,
+       'pplr' type,
+       count(*) records,
+       NULL cnt_errors,
+       NULL avg_err,
+       NULL min_err,
+       NULL max_err,
+       max(gs.pplr) filter (where gs.hour_idx = 0) pplr_4,
+       max(gs.pplr) filter (where gs.hour_idx = 1) pplr_5,
+       max(gs.pplr) filter (where gs.hour_idx = 2) pplr_6,
+       max(gs.pplr) filter (where gs.hour_idx = 3) pplr_7,
+       max(gs.pplr) filter (where gs.hour_idx = 4) pplr_8,
+       max(gs.pplr) filter (where gs.hour_idx = 5) pplr_9,
+       max(gs.pplr) filter (where gs.hour_idx = 6) pplr_10,
+       max(gs.pplr) filter (where gs.hour_idx = 7) pplr_11,
+       max(gs.pplr) filter (where gs.hour_idx = 8) pplr_12,
+       max(gs.pplr) filter (where gs.hour_idx = 9) pplr_13,
+       max(gs.pplr) filter (where gs.hour_idx = 10) pplr_14,
+       max(gs.pplr) filter (where gs.hour_idx = 11) pplr_15,
+       max(gs.pplr) filter (where gs.hour_idx = 12) pplr_16,
+       max(gs.pplr) filter (where gs.hour_idx = 13) pplr_17,
+       max(gs.pplr) filter (where gs.hour_idx = 14) pplr_18,
+       max(gs.pplr) filter (where gs.hour_idx = 15) pplr_19,
+       max(gs.pplr) filter (where gs.hour_idx = 16) pplr_20,
+       max(gs.pplr) filter (where gs.hour_idx = 17) pplr_21,
+       max(gs.pplr) filter (where gs.hour_idx = 18) pplr_22,
+       max(gs.pplr) filter (where gs.hour_idx = 19) pplr_23,
+       max(gs.pplr) filter (where gs.hour_idx = 20) pplr_0,
+       max(gs.pplr) filter (where gs.hour_idx = 21) pplr_1,
+       max(gs.pplr) filter (where gs.hour_idx = 22) pplr_2,
+       max(gs.pplr) filter (where gs.hour_idx = 23) pplr_3
+from tmp_pred gs
+group by gs.cid,
+         gs.category_name,
+         gs.day
+union all
+select gs.cid,
+       gs.day,
+       gs.category_name,
+       'pred_pplr',
+       count(*) records,
+       count(case when gs.pred_err = 0 then null else gs.pred_err end) cnt_errors,
+       ROUND(sum(gs.pred_err) * 1000 / count(*)) / 1000 avg_err,
+       min(gs.pred_err) min_err,
+       max(gs.pred_err) max_err,
+       max(gs.pred_pplr) filter (where gs.hour_idx = 0) pred_pplr_4,
+       max(gs.pred_pplr) filter (where gs.hour_idx = 1) pred_pplr_5,
+       max(gs.pred_pplr) filter (where gs.hour_idx = 2) pred_pplr_6,
+       max(gs.pred_pplr) filter (where gs.hour_idx = 3) pred_pplr_7,
+       max(gs.pred_pplr) filter (where gs.hour_idx = 4) pred_pplr_8,
+       max(gs.pred_pplr) filter (where gs.hour_idx = 5) pred_pplr_9,
+       max(gs.pred_pplr) filter (where gs.hour_idx = 6) pred_pplr_10,
+       max(gs.pred_pplr) filter (where gs.hour_idx = 7) pred_pplr_11,
+       max(gs.pred_pplr) filter (where gs.hour_idx = 8) pred_pplr_12,
+       max(gs.pred_pplr) filter (where gs.hour_idx = 9) pred_pplr_13,
+       max(gs.pred_pplr) filter (where gs.hour_idx = 10) pred_pplr_14,
+       max(gs.pred_pplr) filter (where gs.hour_idx = 11) pred_pplr_15,
+       max(gs.pred_pplr) filter (where gs.hour_idx = 12) pred_pplr_16,
+       max(gs.pred_pplr) filter (where gs.hour_idx = 13) pred_pplr_17,
+       max(gs.pred_pplr) filter (where gs.hour_idx = 14) pred_pplr_18,
+       max(gs.pred_pplr) filter (where gs.hour_idx = 15) pred_pplr_19,
+       max(gs.pred_pplr) filter (where gs.hour_idx = 16) pred_pplr_20,
+       max(gs.pred_pplr) filter (where gs.hour_idx = 17) pred_pplr_21,
+       max(gs.pred_pplr) filter (where gs.hour_idx = 18) pred_pplr_22,
+       max(gs.pred_pplr) filter (where gs.hour_idx = 19) pred_pplr_23,
+       max(gs.pred_pplr) filter (where gs.hour_idx = 20) pred_pplr_0,
+       max(gs.pred_pplr) filter (where gs.hour_idx = 21) pred_pplr_1,
+       max(gs.pred_pplr) filter (where gs.hour_idx = 22) pred_pplr_2,
+       max(gs.pred_pplr) filter (where gs.hour_idx = 23) pred_pplr_3
+from tmp_pred gs
+group by gs.cid,
+         gs.category_name,
+         gs.day
+order by cid, day, type
 '''
     con.execute(query)
 
