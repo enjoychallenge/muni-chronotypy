@@ -170,7 +170,7 @@ with tmp_pred as (
 )
 select
     cid,
-    category_name,
+    category_name category,
     count(*) records,
     count(case when pred_err = 0 then null else pred_err end) cnt_errors,
     ROUND(sum(pred_err) * 1000 / count(*)) / 1000 avg_err,
@@ -191,7 +191,7 @@ DROP table IF EXISTS all_predictions_csv;
 create table all_predictions_csv
 AS
 with tmp_pred as (
-select gs.cid,
+select gs.cid::varchar,
        gs.day,
        gs.hour_idx,
        gs.category_name,
@@ -202,9 +202,9 @@ select gs.cid,
 from all_with_predictions p inner join
     grocery_stores_geom gs on gs.rowid = p.rowid
 )
-select gs.cid,
+select gs.cid::varchar,
        gs.day,
-       gs.category_name,
+       gs.category_name category,
        'pplr' type,
        count(*) records,
        NULL cnt_errors,
@@ -240,9 +240,9 @@ group by gs.cid,
          gs.category_name,
          gs.day
 union all
-select gs.cid,
+select gs.cid::varchar,
        gs.day,
-       gs.category_name,
+       gs.category_name category,
        'pred_pplr',
        count(*) records,
        count(case when gs.pred_err = 0 then null else gs.pred_err end) cnt_errors,
