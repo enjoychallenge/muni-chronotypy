@@ -293,5 +293,4 @@ order by cid, day, type
 # assert ds_check_results['cnt_heart_rate_avg_perc'][0] == 12888, f'ds_check_results={ds_check_results}'
 # assert ds_check_results['cnt_pred_heart_rate_avg_perc'][0] == 12888, f'ds_check_results={ds_check_results}'
 
-precision_output.output_stats()
 logger.info('****************************************************************************************************')
