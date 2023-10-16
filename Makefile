@@ -21,7 +21,10 @@ db-ensure-views:
 
 db-predictions-export:
 	mkdir -p data/derived
-	docker-compose run --rm gdal ogr2ogr -overwrite -lco ENCODING=UTF-8 -f "ESRI Shapefile" /data/derived/predikce.shp "PG:host=postgresql port=5432 dbname=gis user=docker password=docker" -sql "select * from joint_rows_predictions_geom;"
+	docker-compose run --rm gdal ogr2ogr -overwrite -lco ENCODING=UTF-8 -f "ESRI Shapefile" /data/derived/predikce.shp "PG:host=postgresql port=5432 dbname=gis user=docker password=docker" -sql "select * from all_predictions_geom;"
+	rm -rf data/derived/predikce_obchod_den.csv
+	docker-compose run -e PGPASSWORD=docker --entrypoint "psql -U docker -p 5432 -h postgresql gis" --rm postgresql -c "COPY all_predictions_csv TO '/data/derived/predikce_obchod_den.csv' DELIMITER ',' CSV HEADER;"
+	docker-compose run -e PGPASSWORD=docker --entrypoint "bash" --rm postgresql -c "chmod 666 /data/derived/predikce_obchod_den.csv"
 
 stop-all-docker-containers:
 	docker stop $$(docker ps -q)
