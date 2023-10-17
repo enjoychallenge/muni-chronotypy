@@ -116,9 +116,6 @@ from grocery_stores_geom gs inner join
 where gs.popularity > 0
 ;''', con=sql_engine)
 
-# ds_garmin_fit_data_columns = list(ds_garmin_fit_data.columns)
-# ds_garmin_fit_data[ds_garmin_fit_data_columns] = ds_garmin_fit_data[ds_garmin_fit_data_columns].fillna(0)
-
 training_column = 'popularity'
 
 last_columns = [training_column]
@@ -280,17 +277,5 @@ group by gs.cid,
 order by cid, day, type
 '''
     con.execute(query)
-
-# ds_check_results = pd.read_sql('''
-# select count(*)
-#  cnt_rows,
-#        count(heart_rate_avg_perc) cnt_heart_rate_avg_perc,
-#        count(pred_heart_rate_avg_perc) cnt_pred_heart_rate_avg_perc
-# from all_with_predictions
-# ;''', con=sql_engine)
-
-# assert ds_check_results['cnt_rows'][0] == 12888, f'ds_check_results={ds_check_results}'
-# assert ds_check_results['cnt_heart_rate_avg_perc'][0] == 12888, f'ds_check_results={ds_check_results}'
-# assert ds_check_results['cnt_pred_heart_rate_avg_perc'][0] == 12888, f'ds_check_results={ds_check_results}'
 
 logger.info('****************************************************************************************************')
