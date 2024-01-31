@@ -29,9 +29,6 @@ db-predictions-export:
 stop-all-docker-containers:
 	docker stop $$(docker ps -q)
 
-upload-data:
-	rclone copy --progress data/derived gdrive-chronotopy:/06_Vystupy/01_priprava_terenovaci_casti/strojove_uceni/derived
-
 learn:
 	docker-compose run --rm --no-deps trainer python /app/mlearn1.py
 
