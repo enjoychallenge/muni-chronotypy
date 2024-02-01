@@ -71,7 +71,7 @@ cv.number_of_pv_power_stations_b61301_jmk,
 cv.pv_power_stations_capacity_31a2ed_jmk,
 -- landcover_urban_atlas_3level_change_adfa93_jmk,
 cv.elevation_07eb7d_jmk,
-cv.landcover_urban_atlas_3level_39feb2_jmk,
+cv.landcover_urban_atlas_3level_39feb2_jmk as landcover_39feb2,
 cv.road_street_length_4d64b2_jmk,
 cv.number_of_accidents_f02900_jmk,
 cv.number_of_flats_built_1920_1945_cee901_jmk,
@@ -121,7 +121,7 @@ training_column = 'popularity'
 last_columns = [training_column]
 
 grocery_fit_data = mlearn_util.move_columns_back(
-    mlearn_util.split_category_columns(grocery_fit_data_raw, ['category_name', 'day']),
+    mlearn_util.split_category_columns(grocery_fit_data_raw, ['landcover_39feb2', 'category_name', 'day']),
     last_columns
 )
 
