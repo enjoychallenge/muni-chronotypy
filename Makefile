@@ -19,6 +19,12 @@ db-import:
 db-ensure-views:
 	docker-compose run --rm --no-deps trainer python /app/ensure_views.py
 
+create-distance-table:
+	docker-compose run -e PGPASSWORD=docker --entrypoint "psql -U docker -p 5432 -h postgresql gis" --rm postgresql -f /data/create_distance_table.sql
+
+create-cell-surrounding_values:
+	docker-compose run -e PGPASSWORD=docker --entrypoint "psql -U docker -p 5432 -h postgresql gis" --rm postgresql -f /data/create_cell_surrounding_values.sql
+
 db-predictions-export:
 	mkdir -p data/derived
 	docker-compose run --rm gdal ogr2ogr -overwrite -lco ENCODING=UTF-8 -f "ESRI Shapefile" /data/derived/predikce.shp "PG:host=postgresql port=5432 dbname=gis user=docker password=docker" -sql "select * from all_predictions_geom;"

@@ -29,6 +29,16 @@ Materialized view `cell_ruian_training` contains 25,059 cells with RUIAN attribu
 
 Materialized view `grocery_stores_geom` contains 36,972 annotated "popularity". Each record is related to one hour of a week of one grocery store (i.e. one grocery store consists of max 168 records).
 
+## Prepare data
+```bash
+# create table with cell distance, 7m
+make create-distance-table
+
+# create table with values for cell surroundings
+make create-cell-surrounding_values
+```
+
+
 ## Machine learning
 ```bash
 make learn
