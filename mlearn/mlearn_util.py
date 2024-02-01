@@ -94,7 +94,7 @@ def models_cross_validation(train_input, train_annotations):
     results = []
     # https://pythonguides.com/scikit-learn-classification/
     # https://scikit-learn.org/stable/auto_examples/classification/plot_classifier_comparison.html
-    models.append(('LR', LogisticRegression(solver='liblinear', multi_class='ovr', random_state=1)))
+    # models.append(('LR', LogisticRegression(solver='liblinear', multi_class='ovr', random_state=1)))
     models.append(('SGDR', SGDRegressor(random_state=1)))
 
     models.append(('CART', DecisionTreeClassifier(random_state=1)))
