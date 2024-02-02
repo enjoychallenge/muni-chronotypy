@@ -105,7 +105,6 @@ cv.us_res_pop_high_edu_lvl_no_education_622c58_jmk,
 -- us_res_pop_high_edu_lvl_primary_89a90c_jmk,
 -- us_res_pop_high_edu_lvl_secondary_not_graduated_df1937_jmk,
 -- us_res_pop_high_edu_lvl_tertiary_university_d9de47_jmk,
-csv.usually_resident_population_e15d37_jmk_3km,
 gs.rowid,
 gs.cid,
 gs.category_name,
@@ -113,8 +112,7 @@ gs.day,
 gs.hour,
 gs.popularity
 from grocery_stores_geom gs inner join
-     cell_values_geom cv on (gs.sxy_id = cv.sxy_id) inner join
-     cell_surrounding_values csv on cv.sxy_id = csv.sxy_id
+     cell_values_geom cv on (gs.sxy_id = cv.sxy_id)
 where gs.popularity > 0
 ;''', con=sql_engine)
 
