@@ -110,7 +110,7 @@ def models_cross_validation(train_input, train_annotations):
     models.append(('NB', GaussianNB()))
 
     models.append(('SVM', SVC(gamma='auto', random_state=1)))
-    # models.append(('SVC_lin', SVC(kernel="linear", C=0.025),))
+    models.append(('SVC_lin', SVC(kernel="linear", C=0.025),))
     # models.append(('SVRl', SVR(kernel='linear')))
     models.append(('SVRrbf', SVR(kernel='rbf')))
     models.append(('SVRp', SVR(kernel='poly')))
@@ -124,7 +124,7 @@ def models_cross_validation(train_input, train_annotations):
 
     models.append(('KR', KernelRidge()))
 
-    # models.append(('GPC', GaussianProcessClassifier(1.0 * RBF(1.0))))
+    models.append(('GPC', GaussianProcessClassifier(1.0 * RBF(1.0))))
     models.append(('GPR', GaussianProcessRegressor(random_state=1)))
 
     models.append(('PLSR', PLSRegression()))
