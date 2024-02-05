@@ -30,7 +30,8 @@ with sql_engine.connect() as con:
 DROP MATERIALIZED VIEW IF EXISTS grocery_stores_grouped_geom CASCADE;
 CREATE MATERIALIZED VIEW grocery_stores_grouped_geom
 AS
-select cid::varchar,
+select ROW_NUMBER() OVER (ORDER BY (SELECT 1)) AS rowid,
+       cid::varchar,
        day,
        min(category_name) category_name,
        min(geom) geom,
@@ -120,12 +121,14 @@ cv.us_res_pop_high_edu_lvl_no_education_622c58_jmk,
 -- us_res_pop_high_edu_lvl_primary_89a90c_jmk,
 -- us_res_pop_high_edu_lvl_secondary_not_graduated_df1937_jmk,
 -- us_res_pop_high_edu_lvl_tertiary_university_d9de47_jmk,
+gs.rowid,
 gs.cid,
 gs.category_name,
 gs.day,
 (select percentile_disc(0) WITHIN GROUP (ORDER BY hour_idx) as opening_hour_idx from grocery_stores_geom gsg where gsg.cid = gs.cid and gsg.day = gs.day and gsg.popularity > 0) opening_hour_idx
 from grocery_stores_grouped_geom gs inner join
      cell_values_geom cv on (gs.sxy_id = cv.sxy_id)
+where (select percentile_disc(0) WITHIN GROUP (ORDER BY hour_idx) as opening_hour_idx from grocery_stores_geom gsg where gsg.cid = gs.cid and gsg.day = gs.day and gsg.popularity > 0) is not null
 ;''', con=sql_engine)
 
 training_column = 'opening_hour_idx'
@@ -146,7 +149,7 @@ joined_df = mlearn_util.make_predictions(input_ds=grocery_fit_data,
                                          output_ds=grocery_fit_data,
                                          pred_column_name=f'pred_{training_column}',
                                          columns_to_drop=[],
-                                         id_columns=['cid', 'day'],
+                                         id_columns=['rowid', 'cid',],
                                          )
 
 logger.info('****************************************************************************************************')
