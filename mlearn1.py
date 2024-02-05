@@ -125,7 +125,7 @@ gs.rowid,
 gs.cid,
 gs.category_name,
 gs.day,
-(select percentile_disc(0) WITHIN GROUP (ORDER BY hour_idx) as opening_hour_idx from grocery_stores_geom gsg where gsg.cid = gs.cid and gsg.day = gs.day and gsg.popularity > 0) opening_hour_idx
+(select percentile_disc(0) WITHIN GROUP (ORDER BY hour_idx) as opening_hour_idx from grocery_stores_geom gsg where gsg.cid = gs.cid and gsg.day = gs.day and gsg.popularity > 0) + 1 opening_hour_idx
 from grocery_stores_grouped_geom gs inner join
      cell_values_geom cv on (gs.sxy_id = cv.sxy_id)
 where (select percentile_disc(0) WITHIN GROUP (ORDER BY hour_idx) as opening_hour_idx from grocery_stores_geom gsg where gsg.cid = gs.cid and gsg.day = gs.day and gsg.popularity > 0) is not null
