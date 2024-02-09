@@ -14,7 +14,7 @@ from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis, QuadraticDiscriminantAnalysis
 from sklearn.naive_bayes import GaussianNB
 from sklearn.svm import SVC, SVR
-from sklearn.ensemble import ExtraTreesClassifier, RandomForestClassifier, AdaBoostClassifier
+from sklearn.ensemble import ExtraTreesClassifier, RandomForestClassifier, AdaBoostClassifier, GradientBoostingRegressor
 from sklearn.neural_network import MLPClassifier, MLPRegressor
 from sklearn.kernel_ridge import KernelRidge
 from sklearn.gaussian_process import GaussianProcessClassifier, GaussianProcessRegressor
@@ -110,22 +110,23 @@ def models_cross_validation(train_input, train_annotations):
     models.append(('KR', KernelRidge()))
     models.append(('GPR', GaussianProcessRegressor(random_state=1)))
     models.append(('PLSR', PLSRegression()))
+    models.append(('GBR', GradientBoostingRegressor(random_state=1)))
 
-    # classification
-    models.append(('LR', LogisticRegression(solver='liblinear', multi_class='ovr', random_state=1)))
-    models.append(('CART', DecisionTreeClassifier(random_state=1)))
-    models.append(('DTC', DecisionTreeClassifier(max_depth=5, random_state=1)))
-    models.append(('KNN', KNeighborsClassifier()))
-    models.append(('LDA', LinearDiscriminantAnalysis()))
-    models.append(('QDA', QuadraticDiscriminantAnalysis()))
-    models.append(('NB', GaussianNB()))
-    models.append(('SVM', SVC(gamma='auto', random_state=1)))
-    # models.append(('SVC_lin', SVC(kernel="linear", C=0.025),))
-    models.append(('ETC', ExtraTreesClassifier(random_state=1)))
-    models.append(('RFC', RandomForestClassifier(random_state=1)))
-    models.append(('ABC', AdaBoostClassifier(random_state=1)))
-    models.append(('MLPC', MLPClassifier(alpha=1, max_iter=1000, random_state=1)))
-    # models.append(('GPC', GaussianProcessClassifier(1.0 * RBF(1.0))))
+    # # classification
+    # models.append(('LR', LogisticRegression(solver='liblinear', multi_class='ovr', random_state=1)))
+    # models.append(('CART', DecisionTreeClassifier(random_state=1)))
+    # models.append(('DTC', DecisionTreeClassifier(max_depth=5, random_state=1)))
+    # models.append(('KNN', KNeighborsClassifier()))
+    # models.append(('LDA', LinearDiscriminantAnalysis()))
+    # models.append(('QDA', QuadraticDiscriminantAnalysis()))
+    # models.append(('NB', GaussianNB()))
+    # models.append(('SVM', SVC(gamma='auto', random_state=1)))
+    # # models.append(('SVC_lin', SVC(kernel="linear", C=0.025),))
+    # models.append(('ETC', ExtraTreesClassifier(random_state=1)))
+    # models.append(('RFC', RandomForestClassifier(random_state=1)))
+    # models.append(('ABC', AdaBoostClassifier(random_state=1)))
+    # models.append(('MLPC', MLPClassifier(alpha=1, max_iter=1000, random_state=1)))
+    # # models.append(('GPC', GaussianProcessClassifier(1.0 * RBF(1.0))))
 
     # evaluate each model in turn
     kfold = StratifiedKFold(n_splits=5, random_state=1, shuffle=True, )
@@ -134,8 +135,9 @@ def models_cross_validation(train_input, train_annotations):
         # or https://scikit-learn.org/stable/modules/cross_validation.html#cross-validation
         logger.info(f'Starting cross validation using model {name}')
         # logger.info(f'sorted(sklearn.metrics.SCORERS.keys())={sorted(SCORERS.keys())}')
-        cv_results = cross_val_score(model, train_input, train_annotations, cv=kfold, scoring='r2')
+        cv_results = cross_val_score(model, train_input, train_annotations, cv=kfold, scoring='neg_mean_absolute_error')  # 'neg_root_mean_squared_error'
         logger.info('%s: %f (%f)' % (name, cv_results.mean(), cv_results.std()))
+        logger.info(cv_results)
         results.append((name, model, cv_results.mean(), cv_results.std()))
 
     logger.info('models_cross_validation DONE')
