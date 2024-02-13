@@ -21,7 +21,7 @@ from sklearn.gaussian_process import GaussianProcessClassifier, GaussianProcessR
 from sklearn.gaussian_process.kernels import RBF
 from sklearn.cross_decomposition import PLSRegression
 
-from sklearn.metrics import r2_score, mean_absolute_error, max_error, SCORERS
+from sklearn.metrics import r2_score, mean_absolute_error, max_error, mean_squared_error
 
 
 from . import precision_output
@@ -135,7 +135,7 @@ def models_cross_validation(train_input, train_annotations):
         # or https://scikit-learn.org/stable/modules/cross_validation.html#cross-validation
         logger.info(f'Starting cross validation using model {name}')
         # logger.info(f'sorted(sklearn.metrics.SCORERS.keys())={sorted(SCORERS.keys())}')
-        cv_results = cross_val_score(model, train_input, train_annotations, cv=kfold, scoring='neg_mean_absolute_error')  # 'neg_root_mean_squared_error'
+        cv_results = cross_val_score(model, train_input, train_annotations, cv=kfold, scoring='neg_root_mean_squared_error')  # 'neg_root_mean_squared_error'
         logger.info('%s: %f (%f)' % (name, cv_results.mean(), cv_results.std()))
         logger.info(cv_results)
         results.append((name, model, cv_results.mean(), cv_results.std()))
@@ -149,8 +149,9 @@ def evaluate_model(model, input_attributes, annotations):
 
     logger.info(f'r2_score={r2_score(annotations, validation_predictions)}')
     logger.info(f'mean_absolute_error=\n{mean_absolute_error(annotations, validation_predictions)}')
+    logger.info(f'neg_root_mean_squared_error=\n{-np.sqrt(mean_squared_error(annotations, validation_predictions))}')
     logger.info(f'max_error =\n{max_error(annotations, validation_predictions)}')
-    return r2_score(annotations, validation_predictions)
+    return -np.sqrt(mean_squared_error(annotations, validation_predictions))
 
 
 def fit_and_evaluate_model(model, X_train, Y_train, X_validation, Y_validation, X, y):
@@ -158,13 +159,13 @@ def fit_and_evaluate_model(model, X_train, Y_train, X_validation, Y_validation, 
 
     logger.info('****************************************************************************************************')
     logger.info(f'Results for validation set')
-    validation_r2_score = evaluate_model(model, X_validation, Y_validation)
+    validation_error = evaluate_model(model, X_validation, Y_validation)
 
     logger.info('****************************************************************************************************')
     logger.info(f'Results for whole dataset')
     evaluate_model(model, X, y)
 
-    return model, validation_r2_score
+    return model, validation_error
 
 
 def get_model_and_predictions_from_dataset(dataset, ):
@@ -178,14 +179,14 @@ def get_model_and_predictions_from_dataset(dataset, ):
     best_model = max(cross_val_results, key=lambda p: p[2])
     logger.info(f'Best model: {best_model[0]}')
     model = best_model[1]
-    model, validation_r2_score = fit_and_evaluate_model(model, X_train, Y_train, X_validation, Y_validation, X, y)
+    model, validation_error = fit_and_evaluate_model(model, X_train, Y_train, X_validation, Y_validation, X, y)
 
     logger.info('****************************************************************************************************')
     all_rows = dataset.values[:, 1:-1]
     logger.info(f'Describe each attribute\n{dataset.describe()}')
 
     all_predictions = model.predict(all_rows)
-    return best_model + (validation_r2_score,), all_predictions, cross_val_results
+    return best_model + (validation_error,), all_predictions, cross_val_results
 
 
 def make_predictions(input_ds, output_ds, *, pred_column_name, columns_to_drop=None, id_columns=None):

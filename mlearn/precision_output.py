@@ -19,4 +19,4 @@ def output_precision(prediction_type, cross_val_results, final_model):
         precision_writer = csv.writer(csvfile, delimiter=',', quoting=csv.QUOTE_MINIMAL)
         for name, _, mean, std in cross_val_results:
             precision_writer.writerow([prediction_type, 'cross_validation', name, mean, std, ])
-        precision_writer.writerow([prediction_type, 'r2_score', final_model[0], final_model[-1], 0, ])
+        precision_writer.writerow([prediction_type, 'neg_root_mean_squared_error', final_model[0], final_model[-1], 0, ])
