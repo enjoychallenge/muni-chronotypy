@@ -64,27 +64,33 @@ def print_dataset_info(dataset, grouping_column):
     logger.info(f'Show attribute skewness\n{dataset.skew()}')
 
 
-def split_dataset(dataset):
+def split_dataset(dataset, id_columns):
     # # Split-out validation dataset
     array = dataset.values
-    X = array[:, 1:-1]
+    X_with_ids = array[:, :-1]
     y = array[:, -1]
     y = np.array(y, dtype='uint8')
+    x_columns = dataset.columns[:-1]
 
-    logger.info(f'\n{X[:5]}')
+    logger.info(f'\n{X_with_ids[:5]}')
     logger.info(f'\n{y[:5]}')
 
     logger.info(f"  Prepare datasets")
-    X_train, X_validation, Y_train, Y_validation = train_test_split(X, y, test_size=0.35, random_state=1, shuffle=True,)
+    X_train_raw, X_validation_raw, Y_train, Y_validation = train_test_split(X_with_ids, y, test_size=0.35, random_state=1, shuffle=True,)
+    X = pd.DataFrame(X_with_ids, columns=x_columns).drop(columns=id_columns).values
+    X_train = pd.DataFrame(X_train_raw, columns=x_columns).drop(columns=id_columns).values
+    X_validation = pd.DataFrame(X_validation_raw, columns=x_columns).drop(columns=id_columns).values
+    ID_validation = pd.DataFrame(X_validation_raw, columns=x_columns).loc[:, id_columns]
 
-    logger.info(f'X: train={X_train.shape}, validation={X_validation.shape}')
-    logger.info(f'Y: train={Y_train.shape}, validation={Y_validation.shape}')
+    logger.info(f'X: whole={X.shape}, train={X_train.shape}, validation={X_validation.shape}')
+    logger.info(f'Y: whole={y.shape}, train={Y_train.shape}, validation={Y_validation.shape}')
+    logger.info(f'ID_validation={ID_validation.shape}')
 
     train_val, train_cnt = np.unique(Y_train, return_counts=True)
     val_val, val_cnt = np.unique(Y_validation, return_counts=True)
     logger.info(f'train_val.grouping={train_val}:{train_cnt}')
     logger.info(f'val_val.grouping={val_val}:{val_cnt}')
-    return X, y, X_train, X_validation, Y_train, Y_validation
+    return X, y, X_train, X_validation, Y_train, Y_validation, ID_validation
 
 
 def models_cross_validation(train_input, train_annotations):
@@ -168,11 +174,11 @@ def fit_and_evaluate_model(model, X_train, Y_train, X_validation, Y_validation, 
     return model, validation_error
 
 
-def get_model_and_predictions_from_dataset(dataset, ):
+def get_model_and_predictions_from_dataset(dataset, id_columns):
     tren_typ_name = dataset.columns[-1]
     training_dataset = dataset.loc[dataset[tren_typ_name] > 0]
     print_dataset_info(training_dataset, tren_typ_name)
-    X, y, X_train, X_validation, Y_train, Y_validation = split_dataset(training_dataset)
+    X, y, X_train, X_validation, Y_train, Y_validation, ID_validation = split_dataset(training_dataset, id_columns)
 
     cross_val_results = models_cross_validation(X_train, Y_train)
 
@@ -182,22 +188,26 @@ def get_model_and_predictions_from_dataset(dataset, ):
     model, validation_error = fit_and_evaluate_model(model, X_train, Y_train, X_validation, Y_validation, X, y)
 
     logger.info('****************************************************************************************************')
-    all_rows = dataset.values[:, 1:-1]
+    all_rows = X
     logger.info(f'Describe each attribute\n{dataset.describe()}')
 
     all_predictions = model.predict(all_rows)
-    return best_model + (validation_error,), all_predictions, cross_val_results
+    return best_model + (validation_error,), all_predictions, cross_val_results, ID_validation
 
 
 def make_predictions(input_ds, output_ds, *, pred_column_name, columns_to_drop=None, id_columns=None):
     id_columns = id_columns or ['id']
     columns_to_drop = columns_to_drop or []
     input_ds = input_ds.drop(columns_to_drop, axis=1)
-    training_ds = input_ds.drop(id_columns, axis=1)
-    model_tuple, all_predictions, cross_val_results = get_model_and_predictions_from_dataset(training_ds, )
+    model_tuple, all_predictions, cross_val_results, id_validation = get_model_and_predictions_from_dataset(input_ds, id_columns)
 
     df_predictions = pd.DataFrame({pred_column_name: all_predictions})
-    df_predictions_id = pd.concat([input_ds.loc[:, id_columns], df_predictions], axis=1, sort=False)
+    df_predictions_id_raw = pd.concat([input_ds.loc[:, id_columns], df_predictions], axis=1, sort=False)
+
+    df_predictions_id = df_predictions_id_raw.merge(id_validation, on=id_columns,
+                       how='left', indicator=True)
+    df_predictions_id['evaluation'] = np.where(df_predictions_id['_merge'] == 'both', True, False)
+    df_predictions_id = df_predictions_id.drop(columns=['_merge'], axis=1)
 
     precision_output.output_precision(pred_column_name, cross_val_results, model_tuple)
     return output_ds.merge(df_predictions_id.set_index(id_columns), left_on=id_columns, right_on=id_columns, how='inner')
