@@ -160,7 +160,8 @@ with tmp_pred as (
            p.popularity as pplr,
            p.pred_popularity as pred_pplr,
            abs(p.pred_popularity - p.popularity) as pred_err,
-           gs.geom
+           gs.geom,
+           p.evaluation
     from all_with_predictions p
         inner join grocery_stores_geom gs on gs.rowid = p.rowid
     order by cid, day, hour_idx
@@ -168,6 +169,7 @@ with tmp_pred as (
 select
     cid,
     category_name category,
+    sum(case when evaluation then 1 else 0 end) evaluation_cnt,
     count(*) records,
     count(case when pred_err = 0 then null else pred_err end) cnt_errors,
     ROUND(sum(pred_err) * 1000 / count(*)) / 1000 avg_err,
@@ -192,6 +194,7 @@ select gs.cid::varchar,
        gs.day,
        gs.hour_idx,
        gs.category_name,
+       p.evaluation,
        p.popularity as pplr,
        p.pred_popularity as pred_pplr,
        abs(p.pred_popularity - p.popularity) as pred_err,
@@ -204,6 +207,8 @@ select gs.cid::varchar,
        gs.category_name category,
        'pplr' type,
        count(*) records,
+       NULL evaluation_cnt,
+       NULL evaluation_hour_idxs,
        NULL cnt_errors,
        NULL avg_err,
        NULL min_err,
@@ -242,6 +247,8 @@ select gs.cid::varchar,
        gs.category_name category,
        'pred_pplr',
        count(*) records,
+       sum(case when evaluation then 1 else 0 end) evaluation_cnt,
+       STRING_AGG(case when evaluation then hour_idx::varchar end, ',' order by hour_idx asc) evaluation_hour_idxs,
        count(case when gs.pred_err = 0 then null else gs.pred_err end) cnt_errors,
        ROUND(sum(gs.pred_err) * 1000 / count(*)) / 1000 avg_err,
        min(gs.pred_err) min_err,
