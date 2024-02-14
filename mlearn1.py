@@ -1,6 +1,7 @@
 # https://machinelearningmastery.com/machine-learning-in-python-step-by-step/
 
 # compare algorithms
+import numpy as np
 import pandas as pd
 import logging
 import settings
@@ -24,6 +25,22 @@ logger.info(f"Let's learn something.")
 logger.info('****************************************************************************************************')
 
 precision_output.prepare_csv_output()
+
+with sql_engine.connect() as con:
+    query = f'''
+DROP MATERIALIZED VIEW IF EXISTS grocery_stores_grouped_geom CASCADE;
+CREATE MATERIALIZED VIEW grocery_stores_grouped_geom
+AS
+select ROW_NUMBER() OVER (ORDER BY (SELECT 1)) AS rowid,
+       cid::varchar,
+       day,
+       min(category_name) category_name,
+       min(geom) geom,
+       min(sxy_id) sxy_id
+from grocery_stores_geom
+group by cid, day
+'''
+    con.execute(query)
 
 # Load dataset
 logger.info(f"  Reading from DB")
@@ -105,25 +122,49 @@ cv.us_res_pop_high_edu_lvl_no_education_622c58_jmk,
 -- us_res_pop_high_edu_lvl_primary_89a90c_jmk,
 -- us_res_pop_high_edu_lvl_secondary_not_graduated_df1937_jmk,
 -- us_res_pop_high_edu_lvl_tertiary_university_d9de47_jmk,
-csv.usually_resident_population_e15d37_jmk_3km,
 gs.rowid,
 gs.cid,
 gs.category_name,
 gs.day,
-gs.hour,
-gs.popularity
-from grocery_stores_geom gs inner join
-     cell_values_geom cv on (gs.sxy_id = cv.sxy_id) inner join
-     cell_surrounding_values csv on cv.sxy_id = csv.sxy_id
-where gs.popularity > 0
+(select max(gsg.popularity) from grocery_stores_geom gsg where gsg.cid = gs.cid and gsg.day = gs.day and gsg.hour_idx = 0)::float8 pplr_0,
+(select max(gsg.popularity) from grocery_stores_geom gsg where gsg.cid = gs.cid and gsg.day = gs.day and gsg.hour_idx = 1)::float8 pplr_1,
+(select max(gsg.popularity) from grocery_stores_geom gsg where gsg.cid = gs.cid and gsg.day = gs.day and gsg.hour_idx = 2)::float8 pplr_2,
+(select max(gsg.popularity) from grocery_stores_geom gsg where gsg.cid = gs.cid and gsg.day = gs.day and gsg.hour_idx = 3)::float8 pplr_3,
+(select max(gsg.popularity) from grocery_stores_geom gsg where gsg.cid = gs.cid and gsg.day = gs.day and gsg.hour_idx = 4)::float8 pplr_4,
+(select max(gsg.popularity) from grocery_stores_geom gsg where gsg.cid = gs.cid and gsg.day = gs.day and gsg.hour_idx = 5)::float8 pplr_5,
+(select max(gsg.popularity) from grocery_stores_geom gsg where gsg.cid = gs.cid and gsg.day = gs.day and gsg.hour_idx = 6)::float8 pplr_6,
+(select max(gsg.popularity) from grocery_stores_geom gsg where gsg.cid = gs.cid and gsg.day = gs.day and gsg.hour_idx = 7)::float8 pplr_7,
+(select max(gsg.popularity) from grocery_stores_geom gsg where gsg.cid = gs.cid and gsg.day = gs.day and gsg.hour_idx = 8)::float8 pplr_8,
+(select max(gsg.popularity) from grocery_stores_geom gsg where gsg.cid = gs.cid and gsg.day = gs.day and gsg.hour_idx = 9)::float8 pplr_9,
+(select max(gsg.popularity) from grocery_stores_geom gsg where gsg.cid = gs.cid and gsg.day = gs.day and gsg.hour_idx = 10)::float8 pplr_10,
+(select max(gsg.popularity) from grocery_stores_geom gsg where gsg.cid = gs.cid and gsg.day = gs.day and gsg.hour_idx = 11)::float8 pplr_11,
+(select max(gsg.popularity) from grocery_stores_geom gsg where gsg.cid = gs.cid and gsg.day = gs.day and gsg.hour_idx = 12)::float8 pplr_12,
+(select max(gsg.popularity) from grocery_stores_geom gsg where gsg.cid = gs.cid and gsg.day = gs.day and gsg.hour_idx = 13)::float8 pplr_13,
+(select max(gsg.popularity) from grocery_stores_geom gsg where gsg.cid = gs.cid and gsg.day = gs.day and gsg.hour_idx = 14)::float8 pplr_14,
+(select max(gsg.popularity) from grocery_stores_geom gsg where gsg.cid = gs.cid and gsg.day = gs.day and gsg.hour_idx = 15)::float8 pplr_15,
+(select max(gsg.popularity) from grocery_stores_geom gsg where gsg.cid = gs.cid and gsg.day = gs.day and gsg.hour_idx = 16)::float8 pplr_16,
+(select max(gsg.popularity) from grocery_stores_geom gsg where gsg.cid = gs.cid and gsg.day = gs.day and gsg.hour_idx = 17)::float8 pplr_17,
+(select max(gsg.popularity) from grocery_stores_geom gsg where gsg.cid = gs.cid and gsg.day = gs.day and gsg.hour_idx = 18)::float8 pplr_18,
+(select max(gsg.popularity) from grocery_stores_geom gsg where gsg.cid = gs.cid and gsg.day = gs.day and gsg.hour_idx = 19)::float8 pplr_19,
+(select max(gsg.popularity) from grocery_stores_geom gsg where gsg.cid = gs.cid and gsg.day = gs.day and gsg.hour_idx = 20)::float8 pplr_20,
+(select max(gsg.popularity) from grocery_stores_geom gsg where gsg.cid = gs.cid and gsg.day = gs.day and gsg.hour_idx = 21)::float8 pplr_21,
+(select max(gsg.popularity) from grocery_stores_geom gsg where gsg.cid = gs.cid and gsg.day = gs.day and gsg.hour_idx = 22)::float8 pplr_22,
+(select max(gsg.popularity) from grocery_stores_geom gsg where gsg.cid = gs.cid and gsg.day = gs.day and gsg.hour_idx = 23)::float8 pplr_23
+from grocery_stores_grouped_geom gs inner join
+     cell_values_geom cv on (gs.sxy_id = cv.sxy_id)
+where (select percentile_disc(0) WITHIN GROUP (ORDER BY hour_idx) as opening_hour_idx from grocery_stores_geom gsg where gsg.cid = gs.cid and gsg.day = gs.day and gsg.popularity > 0) is not null
 ;''', con=sql_engine)
 
-training_column = 'popularity'
+training_columns = ['pplr_0', 'pplr_1', 'pplr_2', 'pplr_3', 'pplr_4', 'pplr_5', 'pplr_6', 'pplr_7', 'pplr_8', 'pplr_9',
+                    'pplr_10', 'pplr_11', 'pplr_12', 'pplr_13', 'pplr_14', 'pplr_15', 'pplr_16', 'pplr_17', 'pplr_18', 'pplr_19',
+                    'pplr_20', 'pplr_21', 'pplr_22', 'pplr_23', ]
 
-last_columns = [training_column]
+last_columns = training_columns.copy()
+
+grocery_fit_data_raw[training_columns] = grocery_fit_data_raw[training_columns].apply(pd.to_numeric, downcast='float')
 
 grocery_fit_data = mlearn_util.move_columns_back(
-    mlearn_util.split_category_columns(grocery_fit_data_raw, ['landcover_39feb2', 'category_name', 'day']),
+    mlearn_util.split_category_columns(grocery_fit_data_raw, ['landcover_39feb2', 'category_name']),
     last_columns
 )
 
@@ -134,9 +175,9 @@ logger.info(f"shape={grocery_fit_data.shape}")
 
 joined_df = mlearn_util.make_predictions(input_ds=grocery_fit_data,
                                          output_ds=grocery_fit_data,
-                                         pred_column_name=f'pred_{training_column}',
+                                         training_columns=training_columns,
                                          columns_to_drop=[],
-                                         id_columns=['rowid', 'cid'],
+                                         id_columns=['rowid', 'cid',],
                                          )
 
 logger.info('****************************************************************************************************')
@@ -149,135 +190,57 @@ joined_df.to_sql("all_with_predictions", sql_engine)
 
 logger.info('Creating output all_predictions_geom')
 
-with sql_engine.connect() as con:
-    query = f'''
-DROP table IF EXISTS all_predictions_geom;
-create table all_predictions_geom
-AS
-with tmp_pred as (
-    select gs.cid,
-           gs.day,
-           gs.hour_idx,
-           gs.category_name,
-           p.popularity as pplr,
-           p.pred_popularity as pred_pplr,
-           abs(p.pred_popularity - p.popularity) as pred_err,
-           gs.geom
-    from all_with_predictions p
-        inner join grocery_stores_geom gs on gs.rowid = p.rowid
-    order by cid, day, hour_idx
-)
-select
-    cid,
-    category_name category,
-    count(*) records,
-    count(case when pred_err = 0 then null else pred_err end) cnt_errors,
-    ROUND(sum(pred_err) * 1000 / count(*)) / 1000 avg_err,
-    min(pred_err) min_err,
-    max(pred_err) max_err,
-    geom
-from tmp_pred
-group by cid, category_name, geom
-order by avg_err
-'''
-    con.execute(query)
-
-logger.info('Creating output all_predictions_csv')
-
-with sql_engine.connect() as con:
-    query = f'''
-DROP table IF EXISTS all_predictions_csv;
-create table all_predictions_csv
-AS
-with tmp_pred as (
-select gs.cid::varchar,
-       gs.day,
-       gs.hour_idx,
-       gs.category_name,
-       p.popularity as pplr,
-       p.pred_popularity as pred_pplr,
-       abs(p.pred_popularity - p.popularity) as pred_err,
-       gs.geom
-from all_with_predictions p inner join
-    grocery_stores_geom gs on gs.rowid = p.rowid
-)
-select gs.cid::varchar,
-       gs.day,
-       gs.category_name category,
-       'pplr' type,
-       count(*) records,
-       NULL cnt_errors,
-       NULL avg_err,
-       NULL min_err,
-       NULL max_err,
-       max(gs.pplr) filter (where gs.hour_idx = 0) pplr_4,
-       max(gs.pplr) filter (where gs.hour_idx = 1) pplr_5,
-       max(gs.pplr) filter (where gs.hour_idx = 2) pplr_6,
-       max(gs.pplr) filter (where gs.hour_idx = 3) pplr_7,
-       max(gs.pplr) filter (where gs.hour_idx = 4) pplr_8,
-       max(gs.pplr) filter (where gs.hour_idx = 5) pplr_9,
-       max(gs.pplr) filter (where gs.hour_idx = 6) pplr_10,
-       max(gs.pplr) filter (where gs.hour_idx = 7) pplr_11,
-       max(gs.pplr) filter (where gs.hour_idx = 8) pplr_12,
-       max(gs.pplr) filter (where gs.hour_idx = 9) pplr_13,
-       max(gs.pplr) filter (where gs.hour_idx = 10) pplr_14,
-       max(gs.pplr) filter (where gs.hour_idx = 11) pplr_15,
-       max(gs.pplr) filter (where gs.hour_idx = 12) pplr_16,
-       max(gs.pplr) filter (where gs.hour_idx = 13) pplr_17,
-       max(gs.pplr) filter (where gs.hour_idx = 14) pplr_18,
-       max(gs.pplr) filter (where gs.hour_idx = 15) pplr_19,
-       max(gs.pplr) filter (where gs.hour_idx = 16) pplr_20,
-       max(gs.pplr) filter (where gs.hour_idx = 17) pplr_21,
-       max(gs.pplr) filter (where gs.hour_idx = 18) pplr_22,
-       max(gs.pplr) filter (where gs.hour_idx = 19) pplr_23,
-       max(gs.pplr) filter (where gs.hour_idx = 20) pplr_0,
-       max(gs.pplr) filter (where gs.hour_idx = 21) pplr_1,
-       max(gs.pplr) filter (where gs.hour_idx = 22) pplr_2,
-       max(gs.pplr) filter (where gs.hour_idx = 23) pplr_3
-from tmp_pred gs
-group by gs.cid,
-         gs.category_name,
-         gs.day
-union all
-select gs.cid::varchar,
-       gs.day,
-       gs.category_name category,
-       'pred_pplr',
-       count(*) records,
-       count(case when gs.pred_err = 0 then null else gs.pred_err end) cnt_errors,
-       ROUND(sum(gs.pred_err) * 1000 / count(*)) / 1000 avg_err,
-       min(gs.pred_err) min_err,
-       max(gs.pred_err) max_err,
-       max(gs.pred_pplr) filter (where gs.hour_idx = 0) pred_pplr_4,
-       max(gs.pred_pplr) filter (where gs.hour_idx = 1) pred_pplr_5,
-       max(gs.pred_pplr) filter (where gs.hour_idx = 2) pred_pplr_6,
-       max(gs.pred_pplr) filter (where gs.hour_idx = 3) pred_pplr_7,
-       max(gs.pred_pplr) filter (where gs.hour_idx = 4) pred_pplr_8,
-       max(gs.pred_pplr) filter (where gs.hour_idx = 5) pred_pplr_9,
-       max(gs.pred_pplr) filter (where gs.hour_idx = 6) pred_pplr_10,
-       max(gs.pred_pplr) filter (where gs.hour_idx = 7) pred_pplr_11,
-       max(gs.pred_pplr) filter (where gs.hour_idx = 8) pred_pplr_12,
-       max(gs.pred_pplr) filter (where gs.hour_idx = 9) pred_pplr_13,
-       max(gs.pred_pplr) filter (where gs.hour_idx = 10) pred_pplr_14,
-       max(gs.pred_pplr) filter (where gs.hour_idx = 11) pred_pplr_15,
-       max(gs.pred_pplr) filter (where gs.hour_idx = 12) pred_pplr_16,
-       max(gs.pred_pplr) filter (where gs.hour_idx = 13) pred_pplr_17,
-       max(gs.pred_pplr) filter (where gs.hour_idx = 14) pred_pplr_18,
-       max(gs.pred_pplr) filter (where gs.hour_idx = 15) pred_pplr_19,
-       max(gs.pred_pplr) filter (where gs.hour_idx = 16) pred_pplr_20,
-       max(gs.pred_pplr) filter (where gs.hour_idx = 17) pred_pplr_21,
-       max(gs.pred_pplr) filter (where gs.hour_idx = 18) pred_pplr_22,
-       max(gs.pred_pplr) filter (where gs.hour_idx = 19) pred_pplr_23,
-       max(gs.pred_pplr) filter (where gs.hour_idx = 20) pred_pplr_0,
-       max(gs.pred_pplr) filter (where gs.hour_idx = 21) pred_pplr_1,
-       max(gs.pred_pplr) filter (where gs.hour_idx = 22) pred_pplr_2,
-       max(gs.pred_pplr) filter (where gs.hour_idx = 23) pred_pplr_3
-from tmp_pred gs
-group by gs.cid,
-         gs.category_name,
-         gs.day
-order by cid, day, type
-'''
-    con.execute(query)
+# with sql_engine.connect() as con:
+#     query = f'''
+# DROP table IF EXISTS all_predictions_geom;
+# create table all_predictions_geom
+# AS
+# with tmp_pred as (
+#     select gs.cid,
+#            gs.day,
+#            gs.category_name,
+#            gs.geom,
+#            gs.pplr_0
+#     from all_with_predictions p
+#         inner join grocery_stores_grouped_geom gs on gs.cid = p.cid and gs.day = p.day
+#     order by cid, day
+# )
+# select
+#     cid,
+#     category_name category,
+#     24 records,
+#     count(case when pred_err = 0 then null else pred_err end) cnt_errors,
+#     ROUND(sum(pred_err) * 1000 / count(*)) / 1000 avg_err,
+#     min(pred_err) min_err,
+#     max(pred_err) max_err,
+#     geom
+# from all_with_predictions p
+#     inner join grocery_stores_grouped_geom gs on gs.cid = p.cid and gs.day = p.day
+# group by cid, category_name, geom
+# order by avg_err
+# '''
+#     con.execute(query)
+#
+# logger.info('Creating output all_predictions_csv')
+#
+# with sql_engine.connect() as con:
+#     query = f'''
+# DROP table IF EXISTS all_predictions_csv;
+# create table all_predictions_csv
+# AS
+# select gs.cid::varchar,
+#        gs.day,
+#        gs.category_name,
+#        p.pplr_8 as pplr_8,
+#        p.pplr_9 as pplr_9,
+#        p.pred_pplr_8 as pred_pplr_8,
+#        p.pred_pplr_9 as pred_pplr_9,
+#        abs(p.pred_pplr_8 - p.pplr_8) + abs(p.pred_pplr_9 - p.pplr_9) as pred_err,
+#        gs.geom
+# from all_with_predictions p inner join
+#     grocery_stores_grouped_geom gs on gs.cid = p.cid
+#                                   and gs.day = p.day
+# '''
+#     con.execute(query)
 
 logger.info('****************************************************************************************************')
