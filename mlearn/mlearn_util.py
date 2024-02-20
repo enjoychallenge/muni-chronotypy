@@ -210,7 +210,7 @@ def make_predictions(input_ds, output_ds, *, pred_column_name, columns_to_drop=N
     df_predictions_id = df_predictions_id.drop(columns=['_merge'], axis=1)
 
     precision_output.output_precision(pred_column_name, cross_val_results, model_tuple)
-    return output_ds.merge(df_predictions_id.set_index(id_columns), left_on=id_columns, right_on=id_columns, how='inner')
+    return output_ds.merge(df_predictions_id.set_index(id_columns), left_on=id_columns, right_on=id_columns, how='inner'), model_tuple
 
 
 def split_category_columns(data_frame, category_columns):
