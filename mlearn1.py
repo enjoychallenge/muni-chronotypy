@@ -165,6 +165,7 @@ last_columns = [training_column]
 columns_to_split = ['landcover_39feb2', 'category_name', 'day']
 id_columns = ['rowid', 'cid']
 pred_column_name = f'pred_{training_column}'
+group_columns = ['cid']
 
 grocery_fit_data_all = mlearn_util.move_columns_back(
     mlearn_util.split_category_columns(grocery_fit_data_raw, columns_to_split),
@@ -182,6 +183,7 @@ joined_df, model_tuple = mlearn_util.make_predictions(input_ds=grocery_fit_data_
                                                       pred_column_name=pred_column_name,
                                                       columns_to_drop=[],
                                                       id_columns=id_columns,
+                                                      group_columns=group_columns,
                                                       )
 
 logger.info('****************************************************************************************************')
