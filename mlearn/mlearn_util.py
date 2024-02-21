@@ -6,7 +6,7 @@ import pandas as pd
 from pandas import set_option
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import cross_val_score
-from sklearn.model_selection import StratifiedKFold, GroupKFold
+from sklearn.model_selection import StratifiedKFold, GroupKFold, GroupShuffleSplit
 
 from sklearn.linear_model import LogisticRegression, SGDRegressor
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
@@ -76,7 +76,10 @@ def split_dataset(dataset, id_columns, group_columns):
     logger.info(f'\n{y[:5]}')
 
     logger.info(f"  Prepare datasets")
-    X_train_raw, X_validation_raw, Y_train, Y_validation = train_test_split(X_with_ids, y, test_size=0.35, random_state=1, shuffle=True,)
+    # X_train_raw, X_validation_raw, Y_train, Y_validation = train_test_split(X_with_ids, y, test_size=0.35, random_state=1, shuffle=True,)
+    split_groups = dataset.loc[:, group_columns].values
+    train_inds, test_inds = next(GroupShuffleSplit(train_size=0.35, random_state=1).split(X_with_ids, y, split_groups))
+    X_train_raw, X_validation_raw, Y_train, Y_validation = X_with_ids[train_inds], X_with_ids[test_inds], y[train_inds], y[test_inds]
     X = pd.DataFrame(X_with_ids, columns=x_columns).drop(columns=id_columns).values
     X_train = pd.DataFrame(X_train_raw, columns=x_columns).drop(columns=id_columns).values
     X_validation = pd.DataFrame(X_validation_raw, columns=x_columns).drop(columns=id_columns).values

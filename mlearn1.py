@@ -396,7 +396,6 @@ select gs.cid::varchar,
        max(pred.pred_popularity) filter (where pred.hour = 23) pred_pplr_23
 from unknown_grocery_stores gs inner join
      unknown_predictions_raw pred on pred.cid = gs.cid
-where pred.day_2
 group by gs.cid,
          gs.name,
          gs.open_hours,
