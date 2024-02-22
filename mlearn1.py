@@ -358,18 +358,23 @@ with sql_engine.connect() as con:
 DROP table IF EXISTS unknown_predictions_geom;
 create table unknown_predictions_geom
 as
-select gs.cid::varchar,
-       gs.name,
-       gs.open_hours,
-       gs.wkb_geometry,
-       max(case when pred.day_0 then 0
+with pred_tmp as (
+select pred.*,
+       case when pred.day_0 then 0
              when pred.day_1 then 1
              when pred.day_2 then 2
              when pred.day_3 then 3
              when pred.day_4 then 4
              when pred.day_5 then 5
              when pred.day_6 then 6
-           end ) as day,
+           end as day
+from unknown_predictions_raw pred
+)
+select gs.cid::varchar,
+       gs.name,
+       gs.open_hours,
+       gs.wkb_geometry,
+       pred.day,
        max(pred.pred_popularity) filter (where pred.hour = 0) pred_pplr_0,
        max(pred.pred_popularity) filter (where pred.hour = 1) pred_pplr_1,
        max(pred.pred_popularity) filter (where pred.hour = 2) pred_pplr_2,
@@ -395,9 +400,11 @@ select gs.cid::varchar,
        max(pred.pred_popularity) filter (where pred.hour = 22) pred_pplr_22,
        max(pred.pred_popularity) filter (where pred.hour = 23) pred_pplr_23
 from unknown_grocery_stores gs inner join
-     unknown_predictions_raw pred on pred.cid = gs.cid
+     pred_tmp pred on pred.cid = gs.cid
+
 group by gs.cid,
          gs.name,
+         pred.day,
          gs.open_hours,
          gs.wkb_geometry
 order by cid, day
