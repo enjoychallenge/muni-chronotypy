@@ -411,4 +411,19 @@ order by cid, day
 ;'''
     con.execute(query)
 
+    query = """
+INSERT INTO all_predictions_csv (
+    cid, day, category, type, records, evaluation_cnt, evaluation_hour_idxs, cnt_errors, avg_err, min_err, max_err,
+    pplr_4, pplr_5, pplr_6, pplr_7, pplr_8, pplr_9, pplr_10, pplr_11, pplr_12, pplr_13, pplr_14, pplr_15, pplr_16,
+    pplr_17, pplr_18, pplr_19, pplr_20, pplr_21, pplr_22, pplr_23, pplr_0, pplr_1, pplr_2, pplr_3
+)
+select name, day, 'Grocery store' as category, 'pred_pplr' as type,
+       null, null, null, null, null, null, null,
+       pred_pplr_4, pred_pplr_5, pred_pplr_6, pred_pplr_7, pred_pplr_8, pred_pplr_9, pred_pplr_10, pred_pplr_11,
+       pred_pplr_12, pred_pplr_13, pred_pplr_14, pred_pplr_15, pred_pplr_16, pred_pplr_17, pred_pplr_18, pred_pplr_19,
+       pred_pplr_20, pred_pplr_21, pred_pplr_22, pred_pplr_23, pred_pplr_0, pred_pplr_1, pred_pplr_2, pred_pplr_3
+from unknown_predictions_geom
+"""
+    con.execute(query)
+
 logger.info('****************************************************************************************************')
