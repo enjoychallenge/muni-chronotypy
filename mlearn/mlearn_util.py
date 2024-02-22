@@ -78,7 +78,7 @@ def split_dataset(dataset, id_columns, group_columns):
     logger.info(f"  Prepare datasets")
     # X_train_raw, X_validation_raw, Y_train, Y_validation = train_test_split(X_with_ids, y, test_size=0.35, random_state=1, shuffle=True,)
     split_groups = dataset.loc[:, group_columns].values
-    train_inds, test_inds = next(GroupShuffleSplit(train_size=0.35, random_state=1).split(X_with_ids, y, split_groups))
+    train_inds, test_inds = next(GroupShuffleSplit(test_size=0.2, random_state=1).split(X_with_ids, y, split_groups))
     X_train_raw, X_validation_raw, Y_train, Y_validation = X_with_ids[train_inds], X_with_ids[test_inds], y[train_inds], y[test_inds]
     X = pd.DataFrame(X_with_ids, columns=x_columns).drop(columns=id_columns).values
     X_train = pd.DataFrame(X_train_raw, columns=x_columns).drop(columns=id_columns).values
@@ -109,34 +109,34 @@ def models_cross_validation(train_input, train_annotations, groups):
     # https://www.turing.com/kb/scikit-learn-cheatsheet-methods-for-classification-and-regression
 
     # regression
-    models.append(('SGDR', SGDRegressor(random_state=1)))
-    models.append(('DTR', DecisionTreeRegressor(random_state=1)))
-    models.append(('KNR', KNeighborsRegressor()))
-    # models.append(('SVRl', SVR(kernel='linear')))
-    models.append(('SVRrbf', SVR(kernel='rbf')))
-    models.append(('SVRp', SVR(kernel='poly')))
-    # ExtraTreesRegressor, RandomForestRegressor, AdaBoostRegressor
-    models.append(('MLPR', MLPRegressor(alpha=1, max_iter=1000, random_state=1)))
-    models.append(('KR', KernelRidge()))
-    models.append(('GPR', GaussianProcessRegressor(random_state=1)))
-    models.append(('PLSR', PLSRegression()))
-    models.append(('GBR', GradientBoostingRegressor(random_state=1)))
+    # models.append(('SGDR', SGDRegressor(random_state=1)))
+    # models.append(('DTR', DecisionTreeRegressor(random_state=1)))
+    # models.append(('KNR', KNeighborsRegressor()))
+    # # models.append(('SVRl', SVR(kernel='linear')))
+    # models.append(('SVRrbf', SVR(kernel='rbf')))
+    # models.append(('SVRp', SVR(kernel='poly')))
+    # # ExtraTreesRegressor, RandomForestRegressor, AdaBoostRegressor
+    # models.append(('MLPR', MLPRegressor(alpha=1, max_iter=1000, random_state=1)))
+    # models.append(('KR', KernelRidge()))
+    # models.append(('GPR', GaussianProcessRegressor(random_state=1)))
+    # models.append(('PLSR', PLSRegression()))
+    # models.append(('GBR', GradientBoostingRegressor(random_state=1)))
 
     # # classification
     # models.append(('LR', LogisticRegression(solver='liblinear', multi_class='ovr', random_state=1)))
-    # models.append(('CART', DecisionTreeClassifier(random_state=1)))
-    # models.append(('DTC', DecisionTreeClassifier(max_depth=5, random_state=1)))
-    # models.append(('KNN', KNeighborsClassifier()))
-    # models.append(('LDA', LinearDiscriminantAnalysis()))
-    # models.append(('QDA', QuadraticDiscriminantAnalysis()))
-    # models.append(('NB', GaussianNB()))
-    # models.append(('SVM', SVC(gamma='auto', random_state=1)))
-    # # models.append(('SVC_lin', SVC(kernel="linear", C=0.025),))
-    # models.append(('ETC', ExtraTreesClassifier(random_state=1)))
-    # models.append(('RFC', RandomForestClassifier(random_state=1)))
-    # models.append(('ABC', AdaBoostClassifier(random_state=1)))
-    # models.append(('MLPC', MLPClassifier(alpha=1, max_iter=1000, random_state=1)))
-    # # models.append(('GPC', GaussianProcessClassifier(1.0 * RBF(1.0))))
+    models.append(('CART', DecisionTreeClassifier(random_state=1)))
+    models.append(('DTC', DecisionTreeClassifier(max_depth=5, random_state=1)))
+    models.append(('KNN', KNeighborsClassifier()))
+    models.append(('LDA', LinearDiscriminantAnalysis()))
+    models.append(('QDA', QuadraticDiscriminantAnalysis()))
+    models.append(('NB', GaussianNB()))
+    models.append(('SVM', SVC(gamma='auto', random_state=1)))
+    # models.append(('SVC_lin', SVC(kernel="linear", C=0.025),))
+    models.append(('ETC', ExtraTreesClassifier(random_state=1)))
+    models.append(('RFC', RandomForestClassifier(random_state=1)))
+    models.append(('ABC', AdaBoostClassifier(random_state=1)))
+    models.append(('MLPC', MLPClassifier(alpha=1, max_iter=1000, random_state=1)))
+    # models.append(('GPC', GaussianProcessClassifier(1.0 * RBF(1.0))))
 
     # evaluate each model in turn
     # kfold = StratifiedKFold(n_splits=5, random_state=1, shuffle=True, )
