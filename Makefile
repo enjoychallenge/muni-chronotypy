@@ -1,7 +1,7 @@
 .PHONY: test
 
 download-data:
-	rclone sync --progress gdrive-chronotopy:/06_Vystupy/01_priprava_terenovaci_casti/strojove_uceni/raw data/raw
+	rclone copy --progress gdrive-chronotopy:/06_Vystupy/01_priprava_terenovaci_casti/strojove_uceni/raw data/raw
 
 up:
 	docker-compose up -d postgresql
