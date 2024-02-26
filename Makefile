@@ -1,7 +1,7 @@
 .PHONY: test
 
 download-data:
-	rclone sync --progress gdrive-chronotopy:/06_Vystupy/01_priprava_terenovaci_casti/strojove_uceni/raw data/raw
+	rclone copy --progress gdrive-chronotopy:/06_Vystupy/01_priprava_terenovaci_casti/strojove_uceni/raw data/raw
 
 up:
 	docker-compose up -d postgresql
@@ -15,6 +15,7 @@ psql:
 db-import:
 	docker-compose run --rm gdal ogr2ogr -nln all_rows_all_columns -overwrite -f PostgreSQL "PG:host=postgresql port=5432 dbname=gis user=docker password=docker" /data/raw/stavebni_objekty_jmk_atributy_3035.gpkg stavebni_objekty_jmk_atributy_3035
 	docker-compose run --rm --no-deps trainer python /app/import_csv.py
+	docker-compose run --rm gdal ogr2ogr -nln unknown_grocery_stores -overwrite -f PostgreSQL "PG:host=postgresql port=5432 dbname=gis user=docker password=docker" /data/raw/unknown_grocery_stores.geojson new_grocery_stores
 
 db-ensure-views:
 	docker-compose run --rm --no-deps trainer python /app/ensure_views.py
@@ -25,6 +26,8 @@ db-predictions-export:
 	rm -rf data/derived/predikce_obchod_den.csv
 	docker-compose run -e PGPASSWORD=docker --entrypoint "psql -U docker -p 5432 -h postgresql gis" --rm postgresql -c "COPY all_predictions_csv TO '/data/derived/predikce_obchod_den.csv' DELIMITER ',' CSV HEADER;"
 	docker-compose run -e PGPASSWORD=docker --entrypoint "bash" --rm postgresql -c "chmod 666 /data/derived/predikce_obchod_den.csv"
+	docker-compose run --rm gdal ogr2ogr -overwrite -lco ENCODING=UTF-8 -f "ESRI Shapefile" /data/derived/predikce_unknown_grocery.shp "PG:host=postgresql port=5432 dbname=gis user=docker password=docker" -sql "select * from unknown_predictions_geom;"
+
 
 stop-all-docker-containers:
 	docker stop $$(docker ps -q)

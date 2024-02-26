@@ -29,6 +29,7 @@ precision_output.prepare_csv_output()
 logger.info(f"  Reading from DB")
 grocery_fit_data_raw = pd.read_sql('''
 select
+'train' set,
 -- resident_population_91c66b_brno,
 -- cv.access_city_center_public_transport_8_lvls_5db20f_brno,
 -- cv.builtup_area_bc23b0_brno,
@@ -114,28 +115,76 @@ gs.popularity
 from grocery_stores_geom gs inner join
      cell_values_geom cv on (gs.sxy_id = cv.sxy_id)
 where gs.popularity > 0
+union all
+select
+'eval',
+cv.accessbility_public_transport_7_level_4b067d_bmo,
+cv.number_of_accidents_in_the_daytime_40a49b_bmo,
+cv.number_of_accidents_in_the_nighttime_062631_bmo,
+cv.us_res_pop_high_edu_lvl_tertiary_hier_profes_schools_5ea7da_bmo,
+cv.us_res_pop_high_edu_lvl_primary_or_incomplete_a68b58_bmo,
+cv.us_res_pop_high_edu_lvl_secondary_graduated_f9c74f_bmo,
+cv.acces_city_center_public_transport_9_levels_be96f2_jmk,
+cv.general_services_accessibility_f42fff_jmk,
+cv.number_of_pv_power_stations_b61301_jmk,
+cv.pv_power_stations_capacity_31a2ed_jmk,
+cv.elevation_07eb7d_jmk,
+cv.landcover_urban_atlas_3level_39feb2_jmk as landcover_39feb2,
+cv.road_street_length_4d64b2_jmk,
+cv.number_of_accidents_f02900_jmk,
+cv.number_of_flats_built_1920_1945_cee901_jmk,
+cv.number_of_flats_built_1946_1960_3b06c3_jmk,
+cv.number_of_flats_built_1961_1970_c4552c_jmk,
+cv.number_of_flats_built_1971_1980_5da6fe_jmk,
+cv.number_of_flats_built_1981_1990_927a67_jmk,
+cv.number_of_flats_built_1991_2000_064593_jmk,
+cv.number_of_flats_built_2001_2011_5500d8_jmk,
+cv.number_of_flats_built_till_1919_d7a5f9_jmk,
+cv.number_of_inhab_flats_in_family_houses_55aa2b_jmk,
+cv.number_of_inhab_flats_in_prefab_apartment_build_bdfcdf_jmk,
+cv.usually_resident_population_e15d37_jmk,
+cv.usually_resident_population_age_20_24_521338_jmk,
+cv.usually_resident_population_age_65_plus_c662c6_jmk,
+cv.us_res_pop_high_edu_lvl_no_education_622c58_jmk,
+gs.ogc_fid rowid,
+gs.cid cid,
+'Grocery store' category_name,
+days_tab.day,
+hour_tab.hour,
+null popularity
+from unknown_grocery_stores gs inner join
+     cell_values_geom cv on ST_Contains(cv.geom, st_transform(gs.wkb_geometry, 3035)),
+     (select day from generate_series(0, 6) day) days_tab,
+     (select hour from generate_series(0, 23) hour) hour_tab
+where hour_tab.hour >= gs.first_hour
+  and hour_tab.hour <= gs.last_hour
 ;''', con=sql_engine)
 
 training_column = 'popularity'
-
 last_columns = [training_column]
+columns_to_split = ['landcover_39feb2', 'category_name', 'day']
+id_columns = ['rowid', 'cid']
+pred_column_name = f'pred_{training_column}'
+group_columns = ['cid']
 
-grocery_fit_data = mlearn_util.move_columns_back(
-    mlearn_util.split_category_columns(grocery_fit_data_raw, ['landcover_39feb2', 'category_name', 'day']),
+grocery_fit_data_all = mlearn_util.move_columns_back(
+    mlearn_util.split_category_columns(grocery_fit_data_raw, columns_to_split),
     last_columns
 )
+grocery_fit_data_train = grocery_fit_data_all[grocery_fit_data_all['set'] == 'train'].drop(columns=['set'])
 
 logger.info('****************************************************************************************************')
 logger.info('Learning')
 logger.info('****************************************************************************************************')
-logger.info(f"shape={grocery_fit_data.shape}")
+logger.info(f"shape={grocery_fit_data_train.shape}")
 
-joined_df = mlearn_util.make_predictions(input_ds=grocery_fit_data,
-                                         output_ds=grocery_fit_data,
-                                         pred_column_name=f'pred_{training_column}',
-                                         columns_to_drop=[],
-                                         id_columns=['rowid', 'cid'],
-                                         )
+joined_df, model_tuple = mlearn_util.make_predictions(input_ds=grocery_fit_data_train,
+                                                      output_ds=grocery_fit_data_train,
+                                                      pred_column_name=pred_column_name,
+                                                      columns_to_drop=[],
+                                                      id_columns=id_columns,
+                                                      group_columns=group_columns,
+                                                      )
 
 logger.info('****************************************************************************************************')
 logger.info('Creating output all_with_predictions')
@@ -283,6 +332,98 @@ group by gs.cid,
          gs.day
 order by cid, day, type
 '''
+    con.execute(query)
+
+logger.info('****************************************************************************************************')
+logger.info('Predicting')
+logger.info('')
+unknown_grocery_raw = grocery_fit_data_all.loc[grocery_fit_data_all['set'] == 'eval'].drop(columns=['set'])
+df_unknown_predictions_raw = unknown_grocery_raw.copy()
+unknown_grocery = unknown_grocery_raw.drop(columns=id_columns).values[:, :-1]
+
+all_unknown_predictions = model_tuple[1].predict(unknown_grocery)
+df_all_unknown_predictions = pd.DataFrame({pred_column_name: all_unknown_predictions})
+
+df_unknown_predictions_raw[pred_column_name] = all_unknown_predictions
+df_unknown_predictions = df_unknown_predictions_raw.loc[:, id_columns + ['day_0', 'day_1', 'day_2', 'day_3', 'day_4', 'day_5', 'day_6',
+                                                                         'hour', pred_column_name]]
+
+with sql_engine.connect() as con:
+    con.execute("DROP TABLE IF EXISTS unknown_predictions_raw CASCADE;")
+
+df_unknown_predictions.to_sql("unknown_predictions_raw", sql_engine)
+
+with sql_engine.connect() as con:
+    query = f'''
+DROP table IF EXISTS unknown_predictions_geom;
+create table unknown_predictions_geom
+as
+with pred_tmp as (
+select pred.*,
+       case when pred.day_0 then 0
+             when pred.day_1 then 1
+             when pred.day_2 then 2
+             when pred.day_3 then 3
+             when pred.day_4 then 4
+             when pred.day_5 then 5
+             when pred.day_6 then 6
+           end as day
+from unknown_predictions_raw pred
+)
+select gs.cid::varchar,
+       gs.name,
+       gs.open_hours,
+       gs.wkb_geometry,
+       pred.day,
+       max(pred.pred_popularity) filter (where pred.hour = 0) pred_pplr_0,
+       max(pred.pred_popularity) filter (where pred.hour = 1) pred_pplr_1,
+       max(pred.pred_popularity) filter (where pred.hour = 2) pred_pplr_2,
+       max(pred.pred_popularity) filter (where pred.hour = 3) pred_pplr_3,
+       max(pred.pred_popularity) filter (where pred.hour = 4) pred_pplr_4,
+       max(pred.pred_popularity) filter (where pred.hour = 5) pred_pplr_5,
+       max(pred.pred_popularity) filter (where pred.hour = 6) pred_pplr_6,
+       max(pred.pred_popularity) filter (where pred.hour = 7) pred_pplr_7,
+       max(pred.pred_popularity) filter (where pred.hour = 8) pred_pplr_8,
+       max(pred.pred_popularity) filter (where pred.hour = 9) pred_pplr_9,
+       max(pred.pred_popularity) filter (where pred.hour = 10) pred_pplr_10,
+       max(pred.pred_popularity) filter (where pred.hour = 11) pred_pplr_11,
+       max(pred.pred_popularity) filter (where pred.hour = 12) pred_pplr_12,
+       max(pred.pred_popularity) filter (where pred.hour = 13) pred_pplr_13,
+       max(pred.pred_popularity) filter (where pred.hour = 14) pred_pplr_14,
+       max(pred.pred_popularity) filter (where pred.hour = 15) pred_pplr_15,
+       max(pred.pred_popularity) filter (where pred.hour = 16) pred_pplr_16,
+       max(pred.pred_popularity) filter (where pred.hour = 17) pred_pplr_17,
+       max(pred.pred_popularity) filter (where pred.hour = 18) pred_pplr_18,
+       max(pred.pred_popularity) filter (where pred.hour = 19) pred_pplr_19,
+       max(pred.pred_popularity) filter (where pred.hour = 20) pred_pplr_20,
+       max(pred.pred_popularity) filter (where pred.hour = 21) pred_pplr_21,
+       max(pred.pred_popularity) filter (where pred.hour = 22) pred_pplr_22,
+       max(pred.pred_popularity) filter (where pred.hour = 23) pred_pplr_23
+from unknown_grocery_stores gs inner join
+     pred_tmp pred on pred.cid = gs.cid
+
+group by gs.cid,
+         gs.name,
+         pred.day,
+         gs.open_hours,
+         gs.wkb_geometry
+order by cid, day
+;'''
+    con.execute(query)
+
+    query = """
+INSERT INTO all_predictions_csv (
+    cid, day, category, type, records, evaluation_cnt, evaluation_hour_idxs, cnt_errors, avg_err, min_err, max_err,
+    pplr_4, pplr_5, pplr_6, pplr_7, pplr_8, pplr_9, pplr_10, pplr_11, pplr_12, pplr_13, pplr_14, pplr_15, pplr_16,
+    pplr_17, pplr_18, pplr_19, pplr_20, pplr_21, pplr_22, pplr_23, pplr_0, pplr_1, pplr_2, pplr_3
+)
+select name, day, 'Grocery store' as category, 'pred_pplr' as type,
+       null, null, null, null, null, null, null,
+       pred_pplr_4, pred_pplr_5, pred_pplr_6, pred_pplr_7, pred_pplr_8, pred_pplr_9, pred_pplr_10, pred_pplr_11,
+       pred_pplr_12, pred_pplr_13, pred_pplr_14, pred_pplr_15, pred_pplr_16, pred_pplr_17, pred_pplr_18, pred_pplr_19,
+       pred_pplr_20, pred_pplr_21, pred_pplr_22, pred_pplr_23, pred_pplr_0, pred_pplr_1, pred_pplr_2, pred_pplr_3
+from unknown_predictions_geom
+"""
     con.execute(query)
 
 logger.info('****************************************************************************************************')
