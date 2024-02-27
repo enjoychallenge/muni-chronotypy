@@ -109,18 +109,18 @@ def models_cross_validation(train_input, train_annotations, groups):
     # https://www.turing.com/kb/scikit-learn-cheatsheet-methods-for-classification-and-regression
 
     # regression
-    # models.append(('SGDR', SGDRegressor(random_state=1)))
-    # models.append(('DTR', DecisionTreeRegressor(random_state=1)))
-    # models.append(('KNR', KNeighborsRegressor()))
-    # # models.append(('SVRl', SVR(kernel='linear')))
-    # models.append(('SVRrbf', SVR(kernel='rbf')))
-    # models.append(('SVRp', SVR(kernel='poly')))
-    # # ExtraTreesRegressor, RandomForestRegressor, AdaBoostRegressor
-    # models.append(('MLPR', MLPRegressor(alpha=1, max_iter=1000, random_state=1)))
-    # models.append(('KR', KernelRidge()))
-    # models.append(('GPR', GaussianProcessRegressor(random_state=1)))
-    # models.append(('PLSR', PLSRegression()))
-    # models.append(('GBR', GradientBoostingRegressor(random_state=1)))
+    models.append(('SGDR', SGDRegressor(random_state=1)))
+    models.append(('DTR', DecisionTreeRegressor(random_state=1)))
+    models.append(('KNR', KNeighborsRegressor()))
+    # models.append(('SVRl', SVR(kernel='linear')))
+    models.append(('SVRrbf', SVR(kernel='rbf')))
+    models.append(('SVRp', SVR(kernel='poly')))
+    # ExtraTreesRegressor, RandomForestRegressor, AdaBoostRegressor
+    models.append(('MLPR', MLPRegressor(alpha=1, max_iter=1000, random_state=1)))
+    models.append(('KR', KernelRidge()))
+    models.append(('GPR', GaussianProcessRegressor(random_state=1)))
+    models.append(('PLSR', PLSRegression()))
+    models.append(('GBR', GradientBoostingRegressor(random_state=1)))
 
     # # classification
     # models.append(('LR', LogisticRegression(solver='liblinear', multi_class='ovr', random_state=1)))
